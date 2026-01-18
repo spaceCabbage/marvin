@@ -1,0 +1,37 @@
+# ClaudeVM: VPS Deployment Without Domain (IP-based access)
+# Use this for cloud VPS deployments without domain names
+#
+# Access via SSH port forwarding:
+#   ssh -L 8080:localhost:8080 user@your-vps
+#   Then access: http://localhost:8080
+
+services:
+  claudevm-main:
+    # No privileged mode on VPS for security
+    privileged: false
+
+    # Use bridge network instead of host
+    network_mode: bridge
+
+    # Remove USB passthrough
+    devices: []
+
+    # Only necessary capabilities
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_PTRACE
+
+    # Expose ports directly for IP-based or SSH tunnel access
+    ports:
+      - '127.0.0.1:8080:8080' # Only listen on localhost for security
+
+  # Override Chrome to not use profiles (always enabled on VPS)
+  claudevm-chrome:
+    profiles: []
+    ports:
+      - '127.0.0.1:9222:9222' # Chrome debug port via SSH tunnel
+
+
+# No Caddy - direct access via SSH tunnel or internal network
+# Use with: docker compose -f docker/docker-compose.yml -f docker/docker-compose.vps-simple.yml up

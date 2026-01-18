@@ -1,0 +1,42 @@
+# ClaudeVM: Raspberry Pi / Local Machine Overrides
+# Use this for RPi or local machines with USB WiFi adapters
+
+services:
+  claudevm-main:
+    # Privileged mode for USB and monitor mode
+    privileged: true
+
+    # Host network mode for WiFi interfaces
+    network_mode: host
+
+    # USB device passthrough
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+
+    # Additional capabilities
+    cap_add:
+      - NET_ADMIN # Network configuration
+      - NET_RAW # Raw sockets for nmap/masscan
+      - SYS_PTRACE # Process tracing
+      - DAC_OVERRIDE # File access
+      - SETUID # Privilege escalation tools
+      - SETGID # Group switching
+      - SYS_MODULE # Kernel module loading (WiFi drivers)
+
+    # Mount dev for device access
+    volumes:
+      - /dev:/dev:rw
+
+    # Enable Chrome by default on RPi
+    depends_on:
+      claudevm-chrome:
+        condition: service_healthy
+        required: false
+
+  # Use ARM64-optimized Chrome for RPi
+  claudevm-chrome:
+    # Override with ARM-compatible image
+    image: linuxserver/chromium:arm64v8-latest
+
+    # Enable by default on RPi
+    profiles: []

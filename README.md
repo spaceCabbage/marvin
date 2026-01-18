@@ -1,0 +1,142 @@
+# ClaudeVM
+
+**Multi-Platform Claude Code Security Research & Development Environment**
+
+ClaudeVM is a containerized Linux environment that gives Claude Code full system access with security research tools, multi-platform support (x86_64/ARM64/RPi), and flexible deployment options.
+
+## Quick Start
+
+```bash
+git clone https://github.com/spaceCabbage/claudevm.git
+cd claudevm
+make setup      # Creates .env, builds, authenticates
+make connect    # tmux session into container
+# Ctrl+b d      # Detach when done
+```
+
+## Daily Usage
+
+```bash
+make up         # Start containers
+make connect    # Attach to session
+make down       # Stop containers
+```
+
+## Features
+
+- **Dual Modes**: Pentesting agent or development assistant (toggle with `make mode`)
+- **Multi-Architecture**: Native x86_64 and ARM64 (Raspberry Pi)
+- **WiFi Security**: USB adapter support with monitor mode (AWUS036ACS)
+- **Security Tools**: nmap, masscan, sqlmap, Metasploit, aircrack-ng, and more
+- **MCP Servers**: Filesystem, Git, Docker, Database, Browser automation
+- **Persistent Memory**: Claude remembers your preferences across sessions
+- **Proactive**: Claude searches for tools and suggests installations
+
+## Commands
+
+```bash
+make help       # Show all commands
+make setup      # First-time setup
+make up         # Start containers
+make down       # Stop containers
+make connect    # tmux session
+make logs       # Follow logs
+make restart    # Restart containers
+make status     # Container status
+make login      # Re-authenticate Claude
+make shell      # Bash shell (no tmux)
+make clean      # Remove containers/volumes
+```
+
+## Modes
+
+### Pentesting Mode
+
+Claude becomes a security research assistant:
+- Full access to security tools
+- Organized workflow in `~/pentest/`
+- Automatic report generation
+- Authorization prompts at each phase
+
+### Development Mode
+
+Claude helps develop ClaudeVM itself:
+- Optimizes configurations
+- Debugs issues
+- Writes documentation
+
+Set mode via `CLAUDE_MODE` in `.env` (pentest or dev).
+
+## Home Directory
+
+Your home directory (`~` = `/workspace`) persists across sessions:
+- `~/.bashrc` - Shell configuration
+- `~/.claude/` - Claude Code settings
+- `~/.claude-user-prefs` - Your preferences (Claude remembers you)
+- `~/pentest/` - Organized pentest engagements
+- `~/data.db` - SQLite database
+
+Tell Claude your name, email, GitHub username - it saves them automatically.
+
+## Platform Support
+
+| Platform                 | Status       | Notes                |
+|--------------------------|--------------|----------------------|
+| x86_64 (Intel/AMD)       | Full Support | Best performance     |
+| ARM64 (Raspberry Pi 4/5) | Full Support | WiFi adapter support |
+| VPS (Cloud)              | Full Support | With domain/HTTPS    |
+
+## Security Tools Included
+
+- **OSINT**: theHarvester, Sherlock, maigret, bbot, recon-ng, SpiderFoot
+- **Subdomain/Recon**: subfinder, amass, nuclei, httpx, dnsx
+- **Network**: nmap, masscan, netcat, tcpdump
+- **Web**: sqlmap, nikto, wpscan, sslscan, OWASP ZAP
+- **Wireless**: aircrack-ng suite
+- **Password**: john, hashcat, hydra
+- **Exploitation**: Metasploit (optional)
+
+## MCP Servers
+
+- **Filesystem**: File operations
+- **Git**: Repository management
+- **Docker**: Container control
+- **PostgreSQL**: Database queries (optional)
+- **GitHub**: PR/issue management (with token)
+- **Context7**: Documentation querying
+
+## VPS Deployment
+
+```bash
+make setup          # Configure domain
+make build
+make vps-up         # Starts with Caddy/HTTPS
+```
+
+## WiFi Security (RPi)
+
+```bash
+make wifi-test      # Verify adapter
+make wifi-monitor   # Enable monitor mode
+```
+
+## Configuration
+
+Edit `.env` for:
+- `CLAUDE_MODE`: pentest or dev
+- `INSTALL_METASPLOIT`: true/false
+- `WIFI_INTERFACE`: wlan1 (RPi)
+- VPS domain settings
+
+## Documentation
+
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - Deployment scenarios
+- [docs/MCP-SERVERS.md](docs/MCP-SERVERS.md) - MCP configuration
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) - Configuration options
+
+## Security Considerations
+
+ClaudeVM runs with elevated privileges. Use on:
+- Dedicated hardware
+- Isolated VMs
+- Test networks

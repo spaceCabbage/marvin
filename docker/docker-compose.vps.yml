@@ -1,0 +1,66 @@
+# ClaudeVM: VPS Deployment Overrides
+# Use this for cloud VPS deployments with domain names
+
+services:
+  claudevm-main:
+    # No privileged mode on VPS for security
+    privileged: false
+
+    # Use bridge network instead of host
+    network_mode: bridge
+
+    # Remove USB passthrough
+    devices: []
+
+    # Only necessary capabilities
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_PTRACE
+
+  # Caddy reverse proxy for HTTPS
+  claudevm-caddy:
+    image: caddy:2-alpine
+    container_name: claudevm-caddy
+    restart: unless-stopped
+
+    environment:
+      - DOMAIN=${DOMAIN_NAME}
+      - EMAIL=${ADMIN_EMAIL}
+
+    ports:
+      - '80:80' # HTTP (redirects to HTTPS)
+      - '443:443' # HTTPS
+      - '443:443/udp' # HTTP/3
+
+    volumes:
+      # Caddy configuration
+      - ./config/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+
+      # Persistent certificates and data
+      - claudevm-caddy-data:/data
+      - claudevm-caddy-config:/config
+
+    networks:
+      - claudevm-net
+
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:80/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    depends_on:
+      - claudevm-main
+
+  # Override Chrome to not use profiles (always enabled on VPS)
+  claudevm-chrome:
+    profiles: []
+
+# Additional volumes for Caddy
+volumes:
+  claudevm-caddy-data:
+    driver: local
+  claudevm-caddy-config:
+    driver: local

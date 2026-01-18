@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "model": "claude-opus-4-5-20251101",
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "DeleteFile",
+      "Bash",
+      "Glob",
+      "Grep",
+      "LS",
+      "TodoWrite",
+      "Agent",
+      "Skill",
+      "WebFetch",
+      "BashBackground",
+      "BashKill"
+    ],
+    "ask": ["Bash(git push)"],
+    "deny": ["Bash(rm -rf /)", "Bash(sudo reboot)", "Bash(sudo shutdown)"]
+  },
+  "mcp": {
+    "dynamicLoading": true,
+    "timeout": 30000
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat ~/.claude-user-prefs 2>/dev/null || echo 'No user preferences file yet'"
+          },
+          {
+            "type": "command",
+            "command": "echo \"Session started: $(date '+%Y-%m-%d %H:%M:%S')\" >> ~/.claude-session-log"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash\\(rm -rf|Bash\\(sudo rm|Bash\\(dd if=",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[HOOK] Potentially destructive command detected'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$(date '+%H:%M:%S') File modified\" >> ~/.claude-session-log"
+          }
+        ]
+      }
+    ]
+  }
+}

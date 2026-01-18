@@ -1,0 +1,126 @@
+# ClaudeVM: Base Docker Compose Configuration
+# This is the base configuration used by all deployment scenarios
+
+services:
+  # Main development/pentesting container
+  claudevm-main:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        INSTALL_METASPLOIT: ${INSTALL_METASPLOIT:-false}
+      platforms:
+        - linux/amd64
+        - linux/arm64
+    image: claudevm:latest
+    container_name: claudevm-main
+    hostname: claudevm
+    restart: unless-stopped
+
+    # Environment variables from .env
+    environment:
+      - HOME=/workspace
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-opus-4-5-20251101}
+      - CLAUDE_MODE=${CLAUDE_MODE:-pentest}
+      - WIFI_INTERFACE=${WIFI_INTERFACE:-wlan1}
+      - WIFI_MONITOR_MODE=${WIFI_MONITOR_MODE:-false}
+      - TZ=${TZ:-UTC}
+      # Playwright browser path (installed to /opt during build)
+      - PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
+
+    # Volume mounts
+    volumes:
+      # Workspace is the user's home directory ($HOME=/workspace)
+      # Dotfiles, configs, projects, caches all persist here
+      - ../workspace:/workspace:rw
+
+      # Docker socket for Docker MCP server
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+
+      # Scripts (override if needed during development)
+      - ../scripts:/usr/local/bin/scripts:ro
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '${CPU_LIMIT:-2.0}'
+          memory: ${MEMORY_LIMIT:-4g}
+        reservations:
+          cpus: '0.5'
+          memory: 512m
+
+    # Health check
+    healthcheck:
+      test: ['CMD', 'claude', '--version']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Networks
+    networks:
+      - claudevm-net
+
+    # TTY for interactive sessions
+    tty: true
+    stdin_open: true
+
+    # Shared memory for Playwright browser stability
+    shm_size: '2gb'
+
+  # PostgreSQL database (optional)
+  claudevm-postgres:
+    image: postgres:16-alpine
+    container_name: claudevm-postgres
+    restart: unless-stopped
+
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-claudevm_password}
+      - POSTGRES_DB=claudevm
+      - TZ=${TZ:-UTC}
+
+    volumes:
+      - claudevm-postgres-data:/var/lib/postgresql/data
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
+
+    # Health check
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    networks:
+      - claudevm-net
+
+    # Only start if enabled
+    profiles:
+      - postgres
+
+# Networks
+networks:
+  claudevm-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: br-claudevm
+
+# Named volumes
+volumes:
+  claudevm-postgres-data:
+    driver: local
