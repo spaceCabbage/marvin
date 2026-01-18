@@ -61,39 +61,23 @@ During setup:
 
 ```bash
 # Build for your platform
-make build-local
+make build
 
-# Start in development mode
-make up-dev
-
-# Or start in default mode (from .env)
+# Start containers
 make up
 ```
 
 ### Access
 
 ```bash
-# Interactive Claude session
-make shell-claude
+# Interactive Claude session (tmux)
+make connect
 
 # Regular shell
 make shell
 
 # View logs
 make logs
-```
-
-### Switching Modes
-
-```bash
-# Stop current containers
-make down
-
-# Edit .env to change CLAUDE_MODE
-nano .env  # Change to pentest or dev
-
-# Restart
-make up
 ```
 
 ## Raspberry Pi Security Lab
@@ -139,7 +123,7 @@ The AWUS036ACS drivers are **automatically installed** during build on ARM64:
 
 ```bash
 # Build with WiFi driver support
-make rpi-build
+make build
 ```
 
 The build process will:
@@ -152,19 +136,20 @@ The build process will:
 ### Start and Enable WiFi
 
 ```bash
-# Start containers with RPi-specific configuration
-make rpi-up
+# Start containers
+make up
 
-# Test WiFi adapter detection
-make wifi-test
+# Enter shell to test WiFi adapter detection
+make shell
+iwconfig wlan1
 # Should show: wlan1 (or your configured interface)
 
-# Enable monitor mode
-make wifi-monitor
+# Enable monitor mode (inside container)
+monitor-mode.sh wlan1
 # Should output: "Monitor mode enabled on wlan1"
 
 # Enter Claude session
-make shell-claude
+make connect
 ```
 
 ### WiFi Security Testing Workflow
@@ -219,7 +204,7 @@ sudo dphys-swapfile setup
 sudo dphys-swapfile swapon
 
 # Build again
-make rpi-build
+make build
 ```
 
 ## VPS Cloud Deployment
@@ -302,7 +287,7 @@ sudo ufw status
 
 ```bash
 # Build
-make build-local
+make build
 
 # Start with VPS configuration (Caddy enabled)
 make vps-up
@@ -324,7 +309,7 @@ ssh your-user@your-vps-ip
 
 # Enter Claude session
 cd claudevm
-make shell-claude
+make connect
 ```
 
 ### HTTPS Certificate
@@ -471,7 +456,7 @@ df -h
 **Claude won't start:**
 ```bash
 # Check logs
-make logs-claude
+make logs
 
 # Verify authentication method
 # OAuth: ANTHROPIC_API_KEY will be empty (authentication via browser)

@@ -52,8 +52,8 @@ REQUIRED_FILES=(
     "scripts/dev-mode.sh"
     "scripts/pentest-mode.sh"
     "scripts/init-mcp.sh"
-    "config/claude/settings.json"
-    "config/claude/mcp-servers.json"
+    "workspace/.claude/settings.json"
+    "workspace/.claude/mcp-servers.json"
 )
 
 for file in "${REQUIRED_FILES[@]}"; do
@@ -89,9 +89,9 @@ if [ $ERRORS -eq 0 ]; then
     echo ""
     echo "Next steps:"
     echo "  1. make setup      # Configure (if not done)"
-    echo "  2. make build-local # Build image"
-    echo "  3. make up          # Start containers"
-    echo "  4. make shell-claude # Enter Claude session"
+    echo "  2. make build      # Build image"
+    echo "  3. make up         # Start containers"
+    echo "  4. make connect    # Enter Claude session"
 else
     echo "✗ Found $ERRORS error(s). Please fix before continuing."
 fi

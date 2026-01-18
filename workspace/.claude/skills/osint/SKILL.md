@@ -135,10 +135,25 @@ Always save to structured directories:
 ```
 
 ### API Key Management
-Some tools require API keys:
-- Shodan: Set `SHODAN_API_KEY` in .env
-- Censys: Set `CENSYS_API_ID` and `CENSYS_API_SECRET`
-- Have I Been Pwned: Set `HIBP_API_KEY`
+
+Some tools require API keys for full functionality. Add these to your `.env` file:
+
+```bash
+# Shodan (internet device search)
+# Get key: https://account.shodan.io/
+SHODAN_API_KEY=your_key_here
+
+# Censys (internet-wide scanning data)
+# Get keys: https://search.censys.io/account/api
+CENSYS_API_ID=your_id_here
+CENSYS_API_SECRET=your_secret_here
+
+# Have I Been Pwned (breach checking)
+# Get key: https://haveibeenpwned.com/API/Key
+HIBP_API_KEY=your_key_here
+```
+
+After adding keys, restart the container: `make restart`
 
 ## Example Workflows
 

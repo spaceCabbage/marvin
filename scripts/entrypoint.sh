@@ -1,6 +1,6 @@
 #!/bin/bash
 # ClaudeVM Entrypoint Script
-# Handles mode selection and initialization
+# Handles initialization and startup
 
 set -e
 
@@ -15,10 +15,6 @@ echo -e "${BLUE}╔════════════════════�
 echo -e "${BLUE}║                      ClaudeVM Starting...                      ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
 echo ""
-
-# Get mode from environment
-MODE=${CLAUDE_MODE:-pentest}
-echo -e "${YELLOW}Mode:${NC} $MODE"
 
 # Initialize user preferences file (Claude can read/write this)
 USER_PREFS_FILE="$HOME/.claude-user-prefs"
@@ -73,29 +69,6 @@ if [ -f /usr/local/bin/init-mcp.sh ]; then
 else
     echo -e "${YELLOW}⚠️  MCP initialization script not found, skipping${NC}"
 fi
-
-# Load mode-specific configuration
-case "$MODE" in
-    pentest)
-        echo -e "${GREEN}Loading pentesting mode...${NC}"
-        if [ -f /usr/local/bin/pentest-mode.sh ]; then
-            /usr/local/bin/pentest-mode.sh
-        else
-            echo -e "${YELLOW}⚠️  Pentesting mode script not found, continuing${NC}"
-        fi
-        ;;
-    dev)
-        echo -e "${BLUE}Loading development mode...${NC}"
-        if [ -f /usr/local/bin/dev-mode.sh ]; then
-            /usr/local/bin/dev-mode.sh
-        else
-            echo -e "${YELLOW}⚠️  Development mode script not found, continuing${NC}"
-        fi
-        ;;
-    *)
-        echo -e "${YELLOW}⚠️  Unknown mode: $MODE, using defaults${NC}"
-        ;;
-esac
 
 echo ""
 echo -e "${GREEN}╔════════════════════════════════════════════════════════════════╗${NC}"

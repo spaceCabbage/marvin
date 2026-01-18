@@ -45,7 +45,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         vim \
         nano \
         sudo \
-        locales && \
+        locales \
+        unzip && \
     echo "Building for: ${TARGETPLATFORM} on ${BUILDPLATFORM}"
 
 # =============================================================================
@@ -159,8 +160,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     sqlmap --version
 
 # Install OSINT tools
-# Removed abandoned/broken: twint (dead), holehe (abandoned), h8mail (abandoned),
-# sublist3r (unmaintained), toutatis (minimal maintenance)
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir \
         theHarvester \
@@ -337,7 +336,6 @@ RUN npm install -g \
     @modelcontextprotocol/server-filesystem \
     @modelcontextprotocol/server-git \
     @modelcontextprotocol/server-docker \
-    @modelcontextprotocol/server-postgres \
     @modelcontextprotocol/server-github \
     @modelcontextprotocol/server-memory \
     @modelcontextprotocol/server-fetch \

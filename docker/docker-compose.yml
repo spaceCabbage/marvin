@@ -22,7 +22,6 @@ services:
       - HOME=/workspace
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-opus-4-5-20251101}
-      - CLAUDE_MODE=${CLAUDE_MODE:-pentest}
       - WIFI_INTERFACE=${WIFI_INTERFACE:-wlan1}
       - WIFI_MONITOR_MODE=${WIFI_MONITOR_MODE:-false}
       - TZ=${TZ:-UTC}
@@ -70,46 +69,6 @@ services:
     # Shared memory for Playwright browser stability
     shm_size: '2gb'
 
-  # PostgreSQL database (optional)
-  claudevm-postgres:
-    image: postgres:16-alpine
-    container_name: claudevm-postgres
-    restart: unless-stopped
-
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-claudevm_password}
-      - POSTGRES_DB=claudevm
-      - TZ=${TZ:-UTC}
-
-    volumes:
-      - claudevm-postgres-data:/var/lib/postgresql/data
-
-    # Resource limits
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-        reservations:
-          cpus: '0.25'
-          memory: 256m
-
-    # Health check
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-    networks:
-      - claudevm-net
-
-    # Only start if enabled
-    profiles:
-      - postgres
-
 # Networks
 networks:
   claudevm-net:
@@ -120,7 +79,3 @@ networks:
     driver_opts:
       com.docker.network.bridge.name: br-claudevm
 
-# Named volumes
-volumes:
-  claudevm-postgres-data:
-    driver: local

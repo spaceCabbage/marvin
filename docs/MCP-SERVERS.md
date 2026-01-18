@@ -98,44 +98,6 @@ User: "What Docker containers are running?"
 Claude: [Uses docker MCP to list running containers]
 ```
 
-### PostgreSQL (`postgres`)
-
-**Status**: ⚠️ Disabled by default  
-**Enable**: Set `ENABLE_POSTGRES=true` in `.env`
-
-**Purpose**: Database queries and management
-
-**Capabilities**:
-- Execute SQL queries
-- View table schemas
-- Manage data
-- Database administration
-
-**Configuration**:
-```json
-{
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-postgres"],
-  "env": {
-    "POSTGRES_URL": "postgresql://postgres:password@claudevm-postgres:5432/claudevm"
-  }
-}
-```
-
-**Enable Steps**:
-```bash
-# 1. Edit .env
-ENABLE_POSTGRES=true
-POSTGRES_PASSWORD=your_secure_password
-
-# 2. Start with postgres profile
-docker compose --profile postgres up -d
-
-# 3. Verify
-make shell-claude
-"Query the database schema"
-```
-
 ### GitHub (`github`)
 
 **Status**: ⚠️ Disabled by default  
@@ -219,11 +181,9 @@ User: "Search for recent CVEs affecting nginx"
 Claude: [Uses Brave Search MCP to find recent security advisories]
 ```
 
-### Puppeteer (`puppeteer`)
+### Playwright (`playwright`)
 
-**Status**: ⚠️ Disabled by default  
-**Enable**: Set `ENABLE_CHROME=true` in `.env`
-
+**Status**: ✅ Enabled by default
 **Purpose**: Browser automation for web testing
 
 **Capabilities**:
@@ -233,28 +193,20 @@ Claude: [Uses Brave Search MCP to find recent security advisories]
 - Click elements
 - Execute JavaScript
 - Extract data
+- Headless Chromium browser
 
 **Configuration**:
 ```json
 {
   "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+  "args": ["-y", "@playwright/mcp"]
 }
-```
-
-**Enable Steps**:
-```bash
-# 1. Edit .env
-ENABLE_CHROME=true
-
-# 2. Start with chrome profile
-docker compose --profile chrome up -d
 ```
 
 **Usage Example**:
 ```
 User: "Take a screenshot of example.com"
-Claude: [Uses Puppeteer MCP to navigate and capture screenshot]
+Claude: [Uses Playwright MCP to navigate and capture screenshot]
 ```
 
 ### Context7 (`context7`)
@@ -375,7 +327,7 @@ claude mcp add my-server --command "npx -y @username/my-server"
 
 ```bash
 # Enter Claude session
-make shell-claude
+make connect
 
 # Ask Claude
 "What MCP servers are available?"
@@ -406,7 +358,7 @@ npx -y @modelcontextprotocol/server-filesystem /workspace
 
 ```bash
 # View Claude Code logs (includes MCP activity)
-make logs-claude
+make logs
 
 # Look for MCP-related messages
 docker compose logs claudevm-main | grep -i mcp
@@ -423,7 +375,7 @@ docker compose exec claudevm-main npx --version
 docker compose exec claudevm-main node --version
 
 # Reinstall if needed
-make build-local
+make build
 ```
 
 **"Environment variable not set"**

@@ -4,6 +4,33 @@ You are running inside ClaudeVM, a containerized Linux environment for security 
 
 Your home directory is `/workspace` (`$HOME`). Everything here persists across sessions.
 
+## Self-Managing Configuration
+
+**You can manage the `.env` file for the user.** When a feature needs to be enabled or configured:
+
+1. **Ask permission first**: "I can enable X by updating .env. Want me to do that?"
+2. **Edit .env directly**: Use sed or echo to add/modify values
+3. **Restart if needed**: Tell user to run `make restart` for changes to take effect
+
+Example:
+```bash
+# Enable a feature
+echo "GITHUB_TOKEN=ghp_xxxxx" >> /workspace/../.env
+
+# Or modify existing
+sed -i 's|GITHUB_TOKEN=.*|GITHUB_TOKEN=ghp_xxxxx|g' /workspace/../.env
+```
+
+### Configurable Options
+
+| Setting              | Purpose            | Example                       |
+|----------------------|--------------------|-------------------------------|
+| `GITHUB_TOKEN`       | GitHub MCP server  | `ghp_xxxxxxxxxxxx`            |
+| `SHODAN_API_KEY`     | Shodan OSINT       | Get from shodan.io            |
+| `CENSYS_API_ID`      | Censys OSINT       | Get from censys.io            |
+| `BRAVE_API_KEY`      | Brave Search       | Get from brave.com/search/api |
+| `INSTALL_METASPLOIT` | Include Metasploit | `true` or `false`             |
+
 ## User Preferences
 
 **IMPORTANT**: You have a persistent user preferences file at `~/.claude-user-prefs`. You should:
@@ -42,25 +69,21 @@ sed -i 's|name:.*|name: Actual Name|g' ~/.claude-user-prefs
 
 ### Optional Servers (disabled by default)
 
-| Server       | Requires               | How to Enable                         |
-|--------------|------------------------|---------------------------------------|
-| **github**   | `GITHUB_TOKEN`         | Add token to .env, run `make restart` |
-| **postgres** | `ENABLE_POSTGRES=true` | Set in .env, run `make restart`       |
+| Server     | Requires       | How to Enable                         |
+|------------|----------------|---------------------------------------|
+| **github** | `GITHUB_TOKEN` | Add token to .env, run `make restart` |
 
 ## Proactive Feature Suggestions
 
-**IMPORTANT**: When you notice the user's task would benefit from an optional feature, proactively suggest enabling it.
+**IMPORTANT**: When you notice the user's task would benefit from an optional feature, proactively offer to enable it.
 
 ### When user is doing GitHub work:
-> "I notice you're working with GitHub. Want me to help you enable the GitHub MCP server?
-> 1. Get a Personal Access Token from https://github.com/settings/tokens
-> 2. Add to .env: `GITHUB_TOKEN=ghp_xxxxx`
-> 3. Run: `make restart`"
+> "I notice you're working with GitHub. Want me to enable the GitHub MCP server?
+> I'll need a Personal Access Token from https://github.com/settings/tokens
+> I can add it to .env for you."
 
-### When user needs database:
-> "Need a database? You have two options:
-> 1. **SQLite** (already enabled): Use ~/data.db
-> 2. **PostgreSQL**: Set `ENABLE_POSTGRES=true` in .env"
+### When user needs a database:
+> "Need a database? SQLite is already enabled at ~/data.db - ready to use."
 
 ## Web Search & Tool Suggestions
 
@@ -89,21 +112,14 @@ go install github.com/org/tool@latest
 git clone https://github.com/org/tool && cd tool && make install
 ```
 
-## Current Mode
-
-Check `$CLAUDE_MODE` environment variable:
-- **pentest**: Security research mode - organize work in `~/pentest/`
-- **dev**: Development mode - help build and improve ClaudeVM itself
-
 ## Quick Reference
 
-| Command        | Purpose                    |
-|----------------|----------------------------|
-| `make help`    | Show all make targets      |
-| `make doctor`  | Check system health        |
-| `make mode`    | Toggle between dev/pentest |
-| `make logs`    | View container logs        |
-| `make restart` | Restart the container      |
+| Command        | Purpose               |
+|----------------|-----------------------|
+| `make help`    | Show all make targets |
+| `make doctor`  | Check system health   |
+| `make logs`    | View container logs   |
+| `make restart` | Restart the container |
 
 ## Home Directory
 
@@ -119,7 +135,7 @@ Your home directory (`~` or `/workspace`) persists across sessions:
 
 1. Save user info to preferences eagerly
 2. Suggest tools before the user asks
-3. **Suggest enabling optional features** when relevant to the task
+3. **Offer to enable optional features** when relevant to the task
 4. Search the web for current best practices
 5. Install what's needed without excessive confirmation
 6. Keep the user informed but don't over-explain

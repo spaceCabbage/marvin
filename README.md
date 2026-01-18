@@ -24,7 +24,6 @@ make down       # Stop containers
 
 ## Features
 
-- **Dual Modes**: Pentesting agent or development assistant (toggle with `make mode`)
 - **Multi-Architecture**: Native x86_64 and ARM64 (Raspberry Pi)
 - **WiFi Security**: USB adapter support with monitor mode (AWUS036ACS)
 - **Security Tools**: nmap, masscan, sqlmap, Metasploit, aircrack-ng, and more
@@ -47,25 +46,6 @@ make login      # Re-authenticate Claude
 make shell      # Bash shell (no tmux)
 make clean      # Remove containers/volumes
 ```
-
-## Modes
-
-### Pentesting Mode
-
-Claude becomes a security research assistant:
-- Full access to security tools
-- Organized workflow in `~/pentest/`
-- Automatic report generation
-- Authorization prompts at each phase
-
-### Development Mode
-
-Claude helps develop ClaudeVM itself:
-- Optimizes configurations
-- Debugs issues
-- Writes documentation
-
-Set mode via `CLAUDE_MODE` in `.env` (pentest or dev).
 
 ## Home Directory
 
@@ -101,9 +81,10 @@ Tell Claude your name, email, GitHub username - it saves them automatically.
 - **Filesystem**: File operations
 - **Git**: Repository management
 - **Docker**: Container control
-- **PostgreSQL**: Database queries (optional)
+- **SQLite**: Local database (~/data.db)
 - **GitHub**: PR/issue management (with token)
 - **Context7**: Documentation querying
+- **Playwright**: Browser automation
 
 ## VPS Deployment
 
@@ -116,16 +97,19 @@ make vps-up         # Starts with Caddy/HTTPS
 ## WiFi Security (RPi)
 
 ```bash
-make wifi-test      # Verify adapter
-make wifi-monitor   # Enable monitor mode
+# Inside container, verify adapter
+iwconfig wlan1
+
+# Enable monitor mode
+monitor-mode.sh wlan1
 ```
 
 ## Configuration
 
 Edit `.env` for:
-- `CLAUDE_MODE`: pentest or dev
 - `INSTALL_METASPLOIT`: true/false
 - `WIFI_INTERFACE`: wlan1 (RPi)
+- `GITHUB_TOKEN`: GitHub MCP server
 - VPS domain settings
 
 ## Documentation

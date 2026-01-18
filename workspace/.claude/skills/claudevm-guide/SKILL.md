@@ -18,9 +18,9 @@ When a user asks:
 make up        # Start containers
 make connect   # tmux session
 make down      # Stop
-make mode      # Toggle dev/pentest
 make logs      # View logs
 make login     # Re-authenticate
+make doctor    # Check system health
 ```
 
 ### 2. User Preferences
@@ -30,7 +30,14 @@ Tell user about `~/.claude-user-prefs`:
 - Just tell Claude your info and it saves automatically
 - Persists across sessions
 
-### 3. Tool Discovery
+### 3. Self-Managing Configuration
+
+Claude can manage `.env` for the user:
+- Enable features by updating .env
+- Add API keys when needed
+- Always asks permission first
+
+### 4. Tool Discovery
 
 Claude proactively:
 - Searches web for best tools
@@ -38,12 +45,6 @@ Claude proactively:
 - Installs with permission
 
 Example: "I want to enumerate subdomains" → Claude searches, suggests subfinder/amass, offers to install.
-
-### 4. Modes
-
-Toggle with `make mode`:
-- **pentest**: Security research, organized in `~/pentest/`
-- **dev**: Development assistance
 
 ### 5. Available Tools
 
@@ -57,16 +58,17 @@ Pre-installed:
 
 ### 6. MCP Servers
 
-- Filesystem, Git, Docker (always on)
-- PostgreSQL, GitHub, Brave Search (optional)
+- Filesystem, Git, Docker, SQLite (always on)
+- GitHub (optional, needs token)
 - Context7 for documentation
+- Playwright for browser automation
 
 ### 7. Documentation
 
-- `README.md` - Overview
-- `docs/QUICKSTART.md` - Get running fast
+- `README.md` - Overview and quick start
 - `docs/DEPLOYMENT.md` - VPS/RPi deployment
 - `docs/MCP-SERVERS.md` - MCP configuration
+- `docs/CONFIGURATION.md` - Configuration options
 
 ## Example Response
 
@@ -79,7 +81,7 @@ Pre-installed:
 make up        # Start
 make connect   # Connect (tmux)
 make down      # Stop
-make mode      # Toggle mode
+make doctor    # Health check
 ```
 
 **I Remember You:**
@@ -88,7 +90,8 @@ Tell me your name/email/GitHub and I'll save it to `~/.claude-user-prefs`. I'll 
 **I Find Tools:**
 Just tell me what you want to do. I'll search for the best tools, suggest them, and install with your permission.
 
-**Current Mode:** Check `$CLAUDE_MODE` - pentest or dev
+**I Manage Config:**
+Need to enable a feature or add an API key? I can update `.env` for you (with permission).
 
 What would you like to do?
 

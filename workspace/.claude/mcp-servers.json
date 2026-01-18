@@ -81,15 +81,6 @@
       "disabled": false,
       "comment": "Browser automation with headless Chromium"
     },
-    "postgres": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-postgres"],
-      "env": {
-        "POSTGRES_URL": "postgresql://postgres:${POSTGRES_PASSWORD:-claudevm_password}@claudevm-postgres:5432/claudevm"
-      },
-      "disabled": true,
-      "comment": "Enable with ENABLE_POSTGRES=true in .env"
-    },
     "github": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],

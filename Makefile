@@ -176,23 +176,6 @@ restart: ## Restart containers
 	@echo -e "$(GREEN)✓$(NC) Restarted"
 
 # =============================================================================
-# Mode Switching
-# =============================================================================
-
-.PHONY: mode
-mode: ## Toggle between dev and pentest modes
-	@if [ ! -f .env ]; then cp .env.example .env; fi
-	@current=$$(grep -E '^CLAUDE_MODE=' .env | cut -d= -f2); \
-	if [ "$$current" = "dev" ]; then \
-		sed -i 's|CLAUDE_MODE=.*|CLAUDE_MODE=pentest|g' .env; \
-		echo -e "$(GREEN)✓$(NC) Switched to pentest mode"; \
-	else \
-		sed -i 's|CLAUDE_MODE=.*|CLAUDE_MODE=dev|g' .env; \
-		echo -e "$(GREEN)✓$(NC) Switched to dev mode"; \
-	fi
-	@$(MAKE) restart
-
-# =============================================================================
 # Additional Commands
 # =============================================================================
 
@@ -256,11 +239,12 @@ purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
 	@echo -e "$(RED)╚════════════════════════════════════════════════════════════════╝$(NC)"
 	@echo ""
 	@echo -e "$(YELLOW)This will permanently delete:$(NC)"
-	@echo -e "  • All workspace data (workspace/*)"
+	@echo -e "  • User data (pentest/, data.db, preferences)"
 	@echo -e "  • Claude auth (requires re-login)"
-	@echo -e "  • Database volumes"
 	@echo -e "  • Docker images and build cache"
 	@echo -e "  • Your .env configuration"
+	@echo -e ""
+	@echo -e "$(GREEN)Preserved:$(NC) workspace/CLAUDE.md, workspace/.claude/ config"
 	@echo ""
 	@echo -e "$(RED)This cannot be undone!$(NC)"
 	@echo ""
@@ -273,14 +257,16 @@ purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
 		docker rmi claudevm:latest 2>/dev/null || true; \
 		echo -e "$(YELLOW)Pruning build cache...$(NC)"; \
 		docker builder prune -f 2>/dev/null || true; \
-		echo -e "$(YELLOW)Removing workspace data...$(NC)"; \
-		rm -rf workspace/* 2>/dev/null || true; \
-		touch workspace/.gitkeep; \
-		echo -e "$(YELLOW)Removing Claude auth...$(NC)"; \
-		rm -f config/claude/auth.json 2>/dev/null || true; \
-		rm -f config/claude/.claude-session 2>/dev/null || true; \
-		rm -f config/claude/statsig.json 2>/dev/null || true; \
-		rm -rf config/claude/projects 2>/dev/null || true; \
+		echo -e "$(YELLOW)Removing user data (preserving config)...$(NC)"; \
+		rm -rf workspace/pentest 2>/dev/null || true; \
+		rm -f workspace/data.db 2>/dev/null || true; \
+		rm -f workspace/.claude-user-prefs 2>/dev/null || true; \
+		rm -f workspace/.claude-session-log 2>/dev/null || true; \
+		echo -e "$(YELLOW)Removing Claude auth (preserving MCP config)...$(NC)"; \
+		rm -f workspace/.claude/auth.json 2>/dev/null || true; \
+		rm -f workspace/.claude/.claude-session 2>/dev/null || true; \
+		rm -f workspace/.claude/statsig.json 2>/dev/null || true; \
+		rm -rf workspace/.claude/projects 2>/dev/null || true; \
 		echo -e "$(YELLOW)Removing .env...$(NC)"; \
 		rm -f .env 2>/dev/null || true; \
 		echo ""; \
@@ -323,9 +309,9 @@ doctor: ## Check system health and diagnose issues
 	@if $(COMPOSE) exec -T claudevm-main test -f /root/.config/claude/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make login)$(NC)"; fi
 	@# Check MCP config
 	@echo -n "MCP config: "
-	@if [ -f config/claude/mcp-servers.json ]; then \
-		servers=$$(jq '.mcpServers | length' config/claude/mcp-servers.json 2>/dev/null || echo 0); \
-		enabled=$$(jq '[.mcpServers | to_entries[] | select(.value.disabled != true)] | length' config/claude/mcp-servers.json 2>/dev/null || echo 0); \
+	@if [ -f workspace/.claude/mcp-servers.json ]; then \
+		servers=$$(jq '.mcpServers | length' workspace/.claude/mcp-servers.json 2>/dev/null || echo 0); \
+		enabled=$$(jq '[.mcpServers | to_entries[] | select(.value.disabled != true)] | length' workspace/.claude/mcp-servers.json 2>/dev/null || echo 0); \
 		echo -e "$(GREEN)✓ $$enabled/$$servers servers enabled$(NC)"; \
 	else \
 		echo -e "$(YELLOW)⚠ Missing$(NC)"; \
