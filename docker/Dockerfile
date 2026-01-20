@@ -138,16 +138,28 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         john \
         hashcat \
         hydra \
-        nikto \
-        wpscan \
         sslscan \
-        sslyze \
         testssl.sh && \
     nmap --version
 
+# Install nikto from git (not in Debian repos)
+RUN git clone https://github.com/sullo/nikto.git /opt/nikto && \
+    ln -s /opt/nikto/program/nikto.pl /usr/local/bin/nikto && \
+    chmod +x /opt/nikto/program/nikto.pl
+
+# Install sslyze via pip (not in Debian repos)
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir --break-system-packages sslyze
+
+# Install wpscan via Ruby gem (not in Debian repos)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get install -y --no-install-recommends ruby ruby-dev && \
+    gem install wpscan
+
 # Install Python-based security tools
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir \
+    pip install --no-cache-dir --break-system-packages \
         sqlmap \
         impacket \
         scapy \
@@ -161,7 +173,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # Install OSINT tools
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir \
+    pip install --no-cache-dir --break-system-packages \
         theHarvester \
         sherlock-project \
         Photon \
@@ -182,7 +194,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 RUN --mount=type=cache,target=/root/.cache/pip \
     git clone https://github.com/lanmaster53/recon-ng.git /opt/recon-ng && \
     cd /opt/recon-ng && \
-    pip install -r REQUIREMENTS && \
+    pip install --break-system-packages -r REQUIREMENTS && \
     ln -s /opt/recon-ng/recon-ng /usr/local/bin/recon-ng
 
 # Install additional OSINT tools via apt
