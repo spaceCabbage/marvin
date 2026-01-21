@@ -15,11 +15,11 @@ When a user asks:
 ### 1. Quick Reference
 
 ```bash
-make up        # Start containers
-make connect   # tmux session
+make up        # Start container
+make claude    # Launch Claude Code
+make shell     # Bash shell access
 make down      # Stop
 make logs      # View logs
-make login     # Re-authenticate
 make doctor    # Check system health
 ```
 
@@ -79,9 +79,9 @@ Pre-installed:
 **Commands:**
 ```bash
 make up        # Start
-make connect   # Connect (tmux)
+make claude    # Launch Claude
+make shell     # Bash shell
 make down      # Stop
-make doctor    # Health check
 ```
 
 **I Remember You:**

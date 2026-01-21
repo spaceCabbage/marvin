@@ -25,6 +25,17 @@ workspace/.claude/auth.json
 workspace/.claude/statsig.json
 workspace/.claude/projects
 workspace/.claude/.claude-session
+workspace/.claude/cache
+workspace/.claude/debug
+workspace/.claude/file-history
+workspace/.claude/shell-snapshots
+workspace/.claude/debug
+workspace/.claude/statsig
+workspace/.claude/plugins
+workspace/.claude/todos
+workspace/.claude/.credentials.json
+workspace/.claude/history.jsonl
+workspace/.claude/settings.local.json
 
 # =============================================================================
 # Docker

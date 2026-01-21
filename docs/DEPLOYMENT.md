@@ -70,10 +70,10 @@ make up
 ### Access
 
 ```bash
-# Interactive Claude session (tmux)
-make connect
+# Launch Claude Code
+make claude
 
-# Regular shell
+# Bash shell access
 make shell
 
 # View logs
@@ -148,8 +148,8 @@ iwconfig wlan1
 monitor-mode.sh wlan1
 # Should output: "Monitor mode enabled on wlan1"
 
-# Enter Claude session
-make connect
+# Launch Claude
+make claude
 ```
 
 ### WiFi Security Testing Workflow
@@ -307,9 +307,9 @@ Access is via SSH only (most secure):
 # SSH into VPS
 ssh your-user@your-vps-ip
 
-# Enter Claude session
+# Launch Claude
 cd claudevm
-make connect
+make claude
 ```
 
 ### HTTPS Certificate

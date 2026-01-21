@@ -20,7 +20,7 @@ services:
     # Environment variables from .env
     environment:
       - HOME=/workspace
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-opus-4-5-20251101}
       - WIFI_INTERFACE=${WIFI_INTERFACE:-wlan1}
       - WIFI_MONITOR_MODE=${WIFI_MONITOR_MODE:-false}

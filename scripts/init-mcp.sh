@@ -12,24 +12,22 @@ NC='\033[0m'
 
 echo "Initializing MCP servers..."
 
-# MCP config locations
-MCP_CONFIG="/root/.claude/mcp-servers.json"
-MCP_DEFAULT="/root/.claude/mcp-servers.json.default"
+# MCP config locations (use $HOME which is /workspace at runtime)
+MCP_CONFIG="$HOME/.claude/mcp-servers.json"
+MCP_DEFAULT="$HOME/.claude/mcp-servers.json.default"
 
-# If no config exists, copy from default (shipped with image)
-if [ ! -f "$MCP_CONFIG" ]; then
-    if [ -f "$MCP_DEFAULT" ]; then
-        cp "$MCP_DEFAULT" "$MCP_CONFIG"
-        echo -e "${GREEN}✓${NC} Copied default MCP configuration"
-    elif [ -f "/root/.claude/mcp-servers.json" ]; then
-        # Config already exists in .claude directory from Dockerfile
-        MCP_CONFIG="/root/.claude/mcp-servers.json"
-        echo -e "${GREEN}✓${NC} Using shipped MCP configuration"
-    else
-        echo -e "${RED}✗${NC} No MCP configuration found!"
-        echo "  Expected at: $MCP_CONFIG or $MCP_DEFAULT"
-        exit 1
-    fi
+# Check for MCP config
+if [ -f "$MCP_CONFIG" ]; then
+    echo -e "${GREEN}✓${NC} Found MCP configuration at $MCP_CONFIG"
+elif [ -f "$MCP_DEFAULT" ]; then
+    cp "$MCP_DEFAULT" "$MCP_CONFIG"
+    echo -e "${GREEN}✓${NC} Copied default MCP configuration"
+else
+    echo -e "${YELLOW}⚠${NC} No MCP configuration found"
+    echo "  Will be created on first 'claude' run"
+    echo "  Or add config to: $MCP_CONFIG"
+    # Don't exit - MCP is optional, Claude will work without it
+    exit 0
 fi
 
 # Validate MCP configuration

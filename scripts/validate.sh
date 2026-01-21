@@ -91,7 +91,7 @@ if [ $ERRORS -eq 0 ]; then
     echo "  1. make setup      # Configure (if not done)"
     echo "  2. make build      # Build image"
     echo "  3. make up         # Start containers"
-    echo "  4. make connect    # Enter Claude session"
+    echo "  4. make claude     # Launch Claude Code"
 else
     echo "✗ Found $ERRORS error(s). Please fix before continuing."
 fi

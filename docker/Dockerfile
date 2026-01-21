@@ -89,6 +89,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     ln -sf /usr/bin/python3 /usr/local/bin/python && \
     python --version && pip --version
 
+# Install uv for fast Python package management (10-100x faster than pip)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    ln -s /root/.local/bin/uv /usr/local/bin/uv && \
+    uv --version
+
 # Install Go
 RUN GOARCH=${TARGETARCH} && \
     if [ "${GOARCH}" = "amd64" ]; then GOARCH="amd64"; fi && \
@@ -147,9 +152,9 @@ RUN git clone https://github.com/sullo/nikto.git /opt/nikto && \
     ln -s /opt/nikto/program/nikto.pl /usr/local/bin/nikto && \
     chmod +x /opt/nikto/program/nikto.pl
 
-# Install sslyze via pip (not in Debian repos)
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --break-system-packages sslyze
+# Install sslyze via uv (not in Debian repos)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --break-system-packages sslyze
 
 # Install wpscan via Ruby gem (not in Debian repos)
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -158,8 +163,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     gem install wpscan
 
 # Install Python-based security tools
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --break-system-packages \
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --break-system-packages \
         sqlmap \
         impacket \
         scapy \
@@ -172,8 +177,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     sqlmap --version
 
 # Install OSINT tools
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --break-system-packages \
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --break-system-packages \
         theHarvester \
         sherlock-project \
         Photon \
@@ -185,16 +190,17 @@ RUN --mount=type=cache,target=/root/.cache/pip \
         instaloader \
         spiderfoot \
         bbot \
-        maigret && \
+        maigret \
+        metagoofil && \
     theHarvester --version || echo "theHarvester installed"
 
 # Install recon-ng framework
 # Note: recon-ng has limited maintenance (creator stopped active development)
 # but remains functional for basic reconnaissance tasks
-RUN --mount=type=cache,target=/root/.cache/pip \
+RUN --mount=type=cache,target=/root/.cache/uv \
     git clone https://github.com/lanmaster53/recon-ng.git /opt/recon-ng && \
     cd /opt/recon-ng && \
-    pip install --break-system-packages -r REQUIREMENTS && \
+    uv pip install --system --break-system-packages -r REQUIREMENTS && \
     ln -s /opt/recon-ng/recon-ng /usr/local/bin/recon-ng
 
 # Install additional OSINT tools via apt
@@ -202,7 +208,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get install -y --no-install-recommends \
         exiftool \
-        metagoofil \
         curl \
         jq \
         lynx \
@@ -273,6 +278,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 # Install bat (better cat)
 RUN BATARCH=${TARGETARCH} && \
+    if [ "${BATARCH}" = "amd64" ]; then BATARCH="x86_64"; fi && \
     if [ "${BATARCH}" = "arm64" ]; then BATARCH="aarch64"; fi && \
     curl -fsSL "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-${BATARCH}-unknown-linux-gnu.tar.gz" | \
     tar -xzf - -C /tmp && \
@@ -343,19 +349,16 @@ FROM wifi-drivers AS claude-code
 RUN npm install -g @anthropic-ai/claude-code && \
     claude --version
 
-# Pre-install common MCP server packages
+# Pre-install MCP SDK and verified servers
+# Note: server-fetch, server-docker, server-git, server-time, server-sqlite don't exist on npm
 RUN npm install -g \
+    @modelcontextprotocol/sdk \
     @modelcontextprotocol/server-filesystem \
-    @modelcontextprotocol/server-git \
-    @modelcontextprotocol/server-docker \
-    @modelcontextprotocol/server-github \
     @modelcontextprotocol/server-memory \
-    @modelcontextprotocol/server-fetch \
-    @modelcontextprotocol/server-time \
+    @modelcontextprotocol/server-github \
     @modelcontextprotocol/server-sequential-thinking \
-    @modelcontextprotocol/server-sqlite \
     @playwright/mcp \
-    @context7/mcp-server
+    @upstash/context7-mcp
 
 # Install Playwright browsers (headless Chromium) - to shared location
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright

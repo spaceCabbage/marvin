@@ -97,13 +97,18 @@ sed -i 's|name:.*|name: Actual Name|g' ~/.claude-user-prefs
 
 ## Installing Tools
 
-You have full sudo access. Install tools freely:
+You have **full root/sudo access** with no restrictions. Install anything freely.
+
+### Python Packages (use `uv` - it's 10-100x faster than pip)
+```bash
+uv pip install --system <package>        # Install packages
+uv pip install --system -r requirements.txt  # From requirements file
+```
+
+### Other Package Managers
 ```bash
 # Apt packages
 sudo apt update && sudo apt install -y <package>
-
-# Python tools
-pip install <package>
 
 # Go tools
 go install github.com/org/tool@latest
@@ -111,6 +116,17 @@ go install github.com/org/tool@latest
 # From GitHub
 git clone https://github.com/org/tool && cd tool && make install
 ```
+
+### Pre-installed Security Tools
+The container comes with extensive security tools already installed:
+- **Recon**: nmap, masscan, rustscan, theHarvester, sherlock, recon-ng, bbot
+- **Web**: sqlmap, nikto, gobuster, feroxbuster, httpx, nuclei
+- **Network**: wireshark-cli, tcpdump, netcat, socat, proxychains
+- **Exploitation**: metasploit (if enabled), impacket, crackmapexec
+- **OSINT**: shodan, censys, metagoofil, maigret, spiderfoot
+- **Analysis**: volatility3, yara, exiftool, binwalk
+
+Run `which <tool>` or `<tool> --help` to check availability.
 
 ## Quick Reference
 

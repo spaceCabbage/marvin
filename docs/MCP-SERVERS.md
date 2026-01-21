@@ -326,8 +326,8 @@ claude mcp add my-server --command "npx -y @username/my-server"
 ### Check MCP Status
 
 ```bash
-# Enter Claude session
-make connect
+# Launch Claude
+make claude
 
 # Ask Claude
 "What MCP servers are available?"

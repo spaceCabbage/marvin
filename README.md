@@ -9,17 +9,18 @@ ClaudeVM is a containerized Linux environment that gives Claude Code full system
 ```bash
 git clone https://github.com/spaceCabbage/claudevm.git
 cd claudevm
-make setup      # Creates .env, builds, authenticates
-make connect    # tmux session into container
-# Ctrl+b d      # Detach when done
+make setup      # Creates .env and builds image
+make up         # Start container
+make claude     # Launch Claude (auto-prompts login on first run)
 ```
 
 ## Daily Usage
 
 ```bash
-make up         # Start containers
-make connect    # Attach to session
-make down       # Stop containers
+make up         # Start container
+make claude     # Launch Claude Code
+make shell      # Bash shell access
+make down       # Stop container
 ```
 
 ## Features
@@ -36,14 +37,13 @@ make down       # Stop containers
 ```bash
 make help       # Show all commands
 make setup      # First-time setup
-make up         # Start containers
-make down       # Stop containers
-make connect    # tmux session
+make up         # Start container
+make claude     # Launch Claude Code
+make shell      # Bash shell access
+make down       # Stop container
 make logs       # Follow logs
-make restart    # Restart containers
+make restart    # Restart container
 make status     # Container status
-make login      # Re-authenticate Claude
-make shell      # Bash shell (no tmux)
 make clean      # Remove containers/volumes
 ```
 

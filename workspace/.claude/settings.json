@@ -1,8 +1,5 @@
 {
-  "version": 1,
-  "model": "claude-opus-4-5-20251101",
   "permissions": {
-    "defaultMode": "acceptEdits",
     "allow": [
       "Read",
       "Write",
@@ -20,12 +17,15 @@
       "BashBackground",
       "BashKill"
     ],
-    "ask": ["Bash(git push)"],
-    "deny": ["Bash(rm -rf /)", "Bash(sudo reboot)", "Bash(sudo shutdown)"]
-  },
-  "mcp": {
-    "dynamicLoading": true,
-    "timeout": 30000
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(sudo reboot)",
+      "Bash(sudo shutdown)"
+    ],
+    "ask": [
+      "Bash(git push)"
+    ],
+    "defaultMode": "acceptEdits"
   },
   "hooks": {
     "SessionStart": [
@@ -64,5 +64,10 @@
         ]
       }
     ]
+  },
+  "version": 1,
+  "mcp": {
+    "dynamicLoading": true,
+    "timeout": 30000
   }
 }

@@ -110,7 +110,7 @@ setup: ## First-time setup: generate .env, build, start, authenticate
 	@echo ""
 	@$(MAKE) --no-print-directory doctor
 	@echo ""
-	@echo -e "  Run: $(BLUE)make connect$(NC) to start using ClaudeVM"
+	@echo -e "  Run: $(BLUE)make claude$(NC) to start using ClaudeVM"
 	@echo ""
 
 .PHONY: build
@@ -140,11 +140,11 @@ build-clean: ## Build Docker image without cache (fresh build)
 up: ## Start containers in background
 	@$(COMPOSE) up -d
 	@echo -e "$(GREEN)✓$(NC) ClaudeVM running"
-	@echo -e "  Connect: $(BLUE)make connect$(NC)"
+	@echo -e "  Launch Claude: $(BLUE)make claude$(NC)"
+	@echo -e "  Open shell:    $(BLUE)make shell$(NC)"
 
-.PHONY: connect
-connect: ## Connect to running ClaudeVM with tmux
-	@echo -e "$(BLUE)Connecting to ClaudeVM...$(NC)"
+.PHONY: claude
+claude: ## Launch Claude Code directly
 	@if ! docker info >/dev/null 2>&1; then \
 		echo -e "$(RED)ERROR: Docker not running$(NC)"; \
 		exit 1; \
@@ -154,12 +154,23 @@ connect: ## Connect to running ClaudeVM with tmux
 		echo -e "$(YELLOW)Start with:$(NC) make up"; \
 		exit 1; \
 	fi
-	@echo -e "$(YELLOW)Tmux commands:$(NC)"
-	@echo -e "  Detach: $(BLUE)Ctrl+b d$(NC)"
-	@echo -e "  New window: $(BLUE)Ctrl+b c$(NC)"
-	@echo -e "  Switch window: $(BLUE)Ctrl+b n$(NC)"
-	@echo ""
-	$(COMPOSE) exec claudevm-main tmux new-session -A -s claudevm
+	$(COMPOSE) exec claudevm-main claude
+
+.PHONY: shell
+shell: ## Open bash shell in ClaudeVM
+	@if ! docker info >/dev/null 2>&1; then \
+		echo -e "$(RED)ERROR: Docker not running$(NC)"; \
+		exit 1; \
+	fi
+	@if ! $(COMPOSE) ps | grep -q "claudevm-main.*Up"; then \
+		echo -e "$(RED)ERROR: ClaudeVM is not running$(NC)"; \
+		echo -e "$(YELLOW)Start with:$(NC) make up"; \
+		exit 1; \
+	fi
+	$(COMPOSE) exec claudevm-main bash
+
+.PHONY: connect
+connect: shell ## Alias for shell (backwards compat)
 
 .PHONY: down
 down: ## Stop containers
@@ -306,7 +317,7 @@ doctor: ## Check system health and diagnose issues
 	@if $(COMPOSE) ps 2>/dev/null | grep -q "claudevm-main.*Up"; then echo -e "$(GREEN)✓ Running$(NC)"; else echo -e "$(YELLOW)⚠ Not running (run make up)$(NC)"; fi
 	@# Check auth (if container running)
 	@echo -n "Claude auth: "
-	@if $(COMPOSE) exec -T claudevm-main test -f /root/.config/claude/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make login)$(NC)"; fi
+	@if $(COMPOSE) exec -T claudevm-main test -f /root/.config/claude/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make claude to login)$(NC)"; fi
 	@# Check MCP config
 	@echo -n "MCP config: "
 	@if [ -f workspace/.claude/mcp-servers.json ]; then \

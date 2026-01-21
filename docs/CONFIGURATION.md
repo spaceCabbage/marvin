@@ -84,4 +84,4 @@ Claude can manage `.env` for you! When you need to enable a feature or add an AP
 - OSINT API keys → if you want Shodan/Censys integration
 
 **Authentication**: Claude uses OAuth (your Claude Pro/Max subscription).
-Run `make login` if you need to re-authenticate.
+Run `make claude` - it will auto-prompt for login if needed.
