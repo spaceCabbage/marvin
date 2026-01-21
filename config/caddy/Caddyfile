@@ -1,4 +1,4 @@
-# ClaudeVM Caddyfile - Automatic HTTPS Reverse Proxy
+# Marvin Caddyfile - Automatic HTTPS Reverse Proxy
 # This configuration provides automatic HTTPS with Let's Encrypt
 
 {
@@ -27,7 +27,7 @@
     
     # MCP server proxy (if needed for remote access)
     handle /mcp/* {
-        reverse_proxy claudevm-main:3000 {
+        reverse_proxy Marvin-main:3000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
@@ -36,7 +36,7 @@
     
     # Default response
     handle {
-        respond "ClaudeVM - Access via SSH" 200
+        respond "Marvin - Access via SSH" 200
     }
     
     # Security headers

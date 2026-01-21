@@ -1,9 +1,9 @@
-# ClaudeVM: Base Docker Compose Configuration
+# Marvin: Base Docker Compose Configuration
 # This is the base configuration used by all deployment scenarios
 
 services:
   # Main development/pentesting container
-  claudevm-main:
+  marvin-main:
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -12,9 +12,9 @@ services:
       platforms:
         - linux/amd64
         - linux/arm64
-    image: claudevm:latest
-    container_name: claudevm-main
-    hostname: claudevm
+    image: marvin:latest
+    container_name: marvin-main
+    hostname: marvin
     restart: unless-stopped
 
     # Environment variables from .env
@@ -60,7 +60,7 @@ services:
 
     # Networks
     networks:
-      - claudevm-net
+      - marvin-net
 
     # TTY for interactive sessions
     tty: true
@@ -71,11 +71,10 @@ services:
 
 # Networks
 networks:
-  claudevm-net:
+  marvin-net:
     driver: bridge
     ipam:
       config:
         - subnet: 172.28.0.0/16
     driver_opts:
-      com.docker.network.bridge.name: br-claudevm
-
+      com.docker.network.bridge.name: br-marvin

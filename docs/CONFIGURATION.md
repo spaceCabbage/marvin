@@ -1,8 +1,8 @@
-# ClaudeVM Configuration Guide
+# Marvin Configuration Guide
 
 ## Quick Start
 
-After `make setup`, ClaudeVM works immediately with **10 MCP servers** enabled.
+After `make setup`, Marvin works immediately with **10 MCP servers** enabled.
 No API keys required. No configuration needed.
 
 ## MCP Servers

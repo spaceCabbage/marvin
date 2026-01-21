@@ -1,107 +1,26 @@
-# ClaudeVM .gitignore
-
-# =============================================================================
-# Environment and Secrets
-# =============================================================================
+# Environment
 .env
-.env.local
-*.key
-*.pem
-*.crt
 
-# =============================================================================
-# Workspace - Home directory that persists in container
-# =============================================================================
-# Ignore everything in workspace
-workspace/**
-# Track these specific config files
+# Ignore workspace contents (user data)
+workspace/*
+
+# Keep essential config files
 !workspace/CLAUDE.md
 !workspace/.bashrc
+
+# Keep .claude directory structure
 !workspace/.claude/
-!workspace/.claude/**
+workspace/.claude/*
+
+# Keep specific .claude contents
+!workspace/.claude/skills/
 !workspace/.claude/skills/**
-# Ignore Claude runtime files (after un-ignoring .claude directory)
-workspace/.claude/auth.json
-workspace/.claude/statsig.json
-workspace/.claude/projects
-workspace/.claude/.claude-session
-workspace/.claude/cache
-workspace/.claude/debug
-workspace/.claude/file-history
-workspace/.claude/shell-snapshots
-workspace/.claude/debug
-workspace/.claude/statsig
-workspace/.claude/plugins
-workspace/.claude/todos
-workspace/.claude/.credentials.json
-workspace/.claude/history.jsonl
-workspace/.claude/settings.local.json
+!workspace/.claude/templates/
+!workspace/.claude/templates/**
+!workspace/.claude/mcp-servers.json
+!workspace/.claude/settings.json
+!workspace/.claude/statusline.sh
 
-# =============================================================================
-# Docker
-# =============================================================================
-*-data/
-
-# =============================================================================
-# Logs
-# =============================================================================
-*.log
-logs/
-
-# =============================================================================
-# OS Files
-# =============================================================================
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-*~
-
-# =============================================================================
-# Temporary Files
-# =============================================================================
-tmp/
-temp/
-*.tmp
-
-# =============================================================================
-# Build Artifacts
-# =============================================================================
-*.tar.gz
-*.zip
-
-# =============================================================================
-# Backup Files
-# =============================================================================
-*.bak
-*.backup
-
-# =============================================================================
-# Node.js
-# =============================================================================
-node_modules/
-
-# =============================================================================
-# Python
-# =============================================================================
-__pycache__/
-*.py[cod]
-*$py.class
-.Python
-*.so
-.pytest_cache/
-venv/
-.venv/
-
-# =============================================================================
-# Go
-# =============================================================================
-*.exe
-*.dll
-*.dylib
-
-# =============================================================================
-# Caddy
-# =============================================================================
+# Caddy data
 config/caddy/data/
 config/caddy/config/

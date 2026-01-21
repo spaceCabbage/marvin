@@ -1,4 +1,4 @@
-# ClaudeVM: VPS Deployment Without Domain (IP-based access)
+# Marvin: VPS Deployment Without Domain (IP-based access)
 # Use this for cloud VPS deployments without domain names
 #
 # Access via SSH port forwarding:
@@ -6,7 +6,7 @@
 #   Then access: http://localhost:8080
 
 services:
-  claudevm-main:
+  marvin-main:
     # No privileged mode on VPS for security
     privileged: false
 
@@ -27,7 +27,7 @@ services:
       - '127.0.0.1:8080:8080' # Only listen on localhost for security
 
   # Override Chrome to not use profiles (always enabled on VPS)
-  claudevm-chrome:
+  marvin-chrome:
     profiles: []
     ports:
       - '127.0.0.1:9222:9222' # Chrome debug port via SSH tunnel

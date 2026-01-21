@@ -1,14 +1,14 @@
-# ClaudeVM Guide Skill
+# Marvin Guide Skill
 
-Interactive guide to help users learn everything about ClaudeVM.
+Interactive guide to help users learn everything about Marvin.
 
 ## Trigger
 
 When a user asks:
-- "How do I use ClaudeVM?"
-- "What can ClaudeVM do?"
-- "ClaudeVM help"
-- "Show me ClaudeVM features"
+- "How do I use Marvin?"
+- "What can Marvin do?"
+- "Marvin help"
+- "Show me Marvin features"
 
 ## Response
 
@@ -51,9 +51,10 @@ Example: "I want to enumerate subdomains" → Claude searches, suggests subfinde
 Pre-installed:
 - Network: nmap, masscan, netcat, tcpdump
 - Web: sqlmap, nikto, wpscan
-- OSINT: theHarvester, Sherlock, recon-ng
+- OSINT: maigret, theHarvester, recon-ng, h8mail, holehe
 - Wireless: aircrack-ng (with monitor mode)
 - Password: john, hashcat, hydra
+- Reporting: pandoc, weasyprint (Gruvbox dark PDFs)
 - Metasploit (if enabled)
 
 ### 6. MCP Servers
@@ -74,7 +75,7 @@ Pre-installed:
 
 ---
 
-**ClaudeVM Quick Guide**
+**Marvin Quick Guide**
 
 **Commands:**
 ```bash

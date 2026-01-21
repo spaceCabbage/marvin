@@ -1,6 +1,6 @@
-# ClaudeVM Deployment Guide
+# Marvin Deployment Guide
 
-Comprehensive guide for deploying ClaudeVM across different platforms and scenarios.
+Comprehensive guide for deploying Marvin across different platforms and scenarios.
 
 ## Table of Contents
 
@@ -38,14 +38,14 @@ Comprehensive guide for deploying ClaudeVM across different platforms and scenar
 
 ## Local Development (x86_64)
 
-Perfect for developing the ClaudeVM project itself or general development work.
+Perfect for developing the Marvin project itself or general development work.
 
 ### Initial Setup
 
 ```bash
 # Clone repository
-git clone https://github.com/spaceCabbage/claudevm.git
-cd claudevm
+git clone https://github.com/spaceCabbage/Marvin.git
+cd Marvin
 
 # Run interactive setup
 make setup
@@ -103,9 +103,9 @@ curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 newgrp docker
 
-# Clone ClaudeVM
-git clone https://github.com/spaceCabbage/claudevm.git
-cd claudevm
+# Clone Marvin
+git clone https://github.com/spaceCabbage/Marvin.git
+cd Marvin
 
 # Run setup wizard
 make setup
@@ -159,7 +159,7 @@ make claude
 "Scan for nearby WiFi networks"
 
 # Claude will use airodump-ng to scan
-# Example output saved to /workspace/pentest/<target>_<date>/captures/
+# Example output saved to ~/engagements/<client>/<type>_<date>/raw/captures/
 
 # For authorized testing, ask:
 "Capture handshake for network SSID (channel X)"
@@ -191,7 +191,7 @@ lsmod | grep 8821au
 dmesg | grep 8821au | tail -20
 
 # Rebuild with verbose output
-docker build --progress=plain -t claudevm:arm64 .
+docker build --progress=plain -t Marvin:arm64 .
 ```
 
 **Out of Memory During Build:**
@@ -209,7 +209,7 @@ make build
 
 ## VPS Cloud Deployment
 
-Deploy ClaudeVM on a cloud VPS with automatic HTTPS and domain access.
+Deploy Marvin on a cloud VPS with automatic HTTPS and domain access.
 
 ### VPS Requirements
 
@@ -245,13 +245,13 @@ curl -fsSL https://get.docker.com | sh
 apt install -y docker-compose-plugin
 
 # Create non-root user (recommended)
-adduser claudevm
-usermod -aG docker claudevm
-su - claudevm
+adduser Marvin
+usermod -aG docker Marvin
+su - Marvin
 
 # Clone repository
-git clone https://github.com/spaceCabbage/claudevm.git
-cd claudevm
+git clone https://github.com/spaceCabbage/Marvin.git
+cd Marvin
 
 # Run setup
 make setup
@@ -308,7 +308,7 @@ Access is via SSH only (most secure):
 ssh your-user@your-vps-ip
 
 # Launch Claude
-cd claudevm
+cd Marvin
 make claude
 ```
 
@@ -318,12 +318,12 @@ Caddy automatically obtains Let's Encrypt certificates. Check:
 
 ```bash
 # View Caddy logs
-docker compose -f docker/docker-compose.yml -f docker/docker-compose.vps.yml logs claudevm-caddy
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.vps.yml logs Marvin-caddy
 
 # Should see: "certificate obtained successfully"
 ```
 
-Visit `https://your-domain.com` - you should see "ClaudeVM - Access via SSH".
+Visit `https://your-domain.com` - you should see "Marvin - Access via SSH".
 
 ### VPS Security Hardening
 
@@ -410,17 +410,17 @@ make restart
 
 ### Multiple Instances
 
-Run multiple ClaudeVM instances for different purposes:
+Run multiple Marvin instances for different purposes:
 
 ```bash
 # Clone to separate directory
-cp -r claudevm claudevm-dev
+cp -r Marvin Marvin-dev
 
 # Edit docker-compose.yml to change container names
-# Change: claudevm-main -> claudevm-dev-main
+# Change: Marvin-main -> Marvin-dev-main
 
 # Use different .env configuration
-cd claudevm-dev
+cd Marvin-dev
 make setup
 make up
 ```
@@ -464,7 +464,7 @@ make logs
 cat .env | grep ANTHROPIC_API_KEY
 
 # Test authentication
-docker compose exec claudevm-main claude --version
+docker compose exec Marvin-main claude --version
 ```
 
 **MCP servers not loading:**
@@ -473,10 +473,10 @@ docker compose exec claudevm-main claude --version
 cat workspace/.claude/mcp-servers.json | jq
 
 # Test npx availability
-docker compose exec claudevm-main npx --version
+docker compose exec Marvin-main npx --version
 
 # Check Node.js
-docker compose exec claudevm-main node --version
+docker compose exec Marvin-main node --version
 ```
 
 **Permission denied errors:**
@@ -494,10 +494,10 @@ docker compose ps
 
 # Check networks
 docker network ls
-docker network inspect claudevm-net
+docker network inspect Marvin-net
 
 # Check ports
-docker compose port claudevm-main
+docker compose port Marvin-main
 ```
 
 **VPS domain not resolving:**
@@ -506,7 +506,7 @@ docker compose port claudevm-main
 dig your-domain.com
 
 # Check Caddy logs
-docker compose logs claudevm-caddy
+docker compose logs Marvin-caddy
 
 # Verify ports open
 sudo netstat -tlnp | grep :443
@@ -518,13 +518,13 @@ sudo netstat -tlnp | grep :443
 
 ```bash
 # Backup .env and workspace
-tar -czf claudevm-backup-$(date +%Y%m%d).tar.gz \
+tar -czf Marvin-backup-$(date +%Y%m%d).tar.gz \
     .env \
     workspace/ \
     workspace/.claude/
 
 # Store securely
-scp claudevm-backup-*.tar.gz user@backup-server:/backups/
+scp Marvin-backup-*.tar.gz user@backup-server:/backups/
 ```
 
 ### Migrate to New Server
@@ -532,14 +532,14 @@ scp claudevm-backup-*.tar.gz user@backup-server:/backups/
 ```bash
 # On old server
 make down
-tar -czf claudevm-full-backup.tar.gz claudevm/
+tar -czf Marvin-full-backup.tar.gz Marvin/
 
 # Transfer to new server
-scp claudevm-full-backup.tar.gz user@new-server:
+scp Marvin-full-backup.tar.gz user@new-server:
 
 # On new server
-tar -xzf claudevm-full-backup.tar.gz
-cd claudevm
+tar -xzf Marvin-full-backup.tar.gz
+cd Marvin
 make up
 ```
 
@@ -586,5 +586,5 @@ sudo systemctl disable avahi-daemon
 ---
 
 For more help:
-- GitHub Issues: https://github.com/spaceCabbage/claudevm/issues
-- Documentation: https://github.com/spaceCabbage/claudevm/tree/main/docs
+- GitHub Issues: https://github.com/spaceCabbage/Marvin/issues
+- Documentation: https://github.com/spaceCabbage/Marvin/tree/main/docs

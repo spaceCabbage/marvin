@@ -1,8 +1,8 @@
-# ClaudeVM Shell Configuration
+# Marvin Shell Configuration
 # Optimized for AI-assisted workflows
 
-# Minimal, parseable prompt: "claudevm:/path$ "
-export PS1='claudevm:\w\$ '
+# Minimal, parseable prompt: "marvin:/path$ "
+export PS1='marvin:\w\$ '
 
 # History - comprehensive for context
 HISTSIZE=50000

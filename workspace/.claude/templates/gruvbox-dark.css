@@ -1,0 +1,245 @@
+/* Gruvbox Dark Theme for OSINT Reports
+ * Used with pandoc + weasyprint for PDF generation
+ * Minimal margins, dark background, easy on the eyes
+ */
+
+@page {
+    size: A4;
+    margin: 0.5in;
+    background-color: #282828;
+}
+
+body {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #ebdbb2;
+    background-color: #282828;
+    padding: 0;
+    margin: 0;
+}
+
+/* Headers - Gruvbox Yellow/Orange */
+h1 {
+    color: #fabd2f;
+    font-size: 24pt;
+    border-bottom: 2px solid #504945;
+    padding-bottom: 8px;
+    margin-top: 24px;
+    margin-bottom: 16px;
+}
+
+h2 {
+    color: #fe8019;
+    font-size: 18pt;
+    border-bottom: 1px solid #3c3836;
+    padding-bottom: 6px;
+    margin-top: 20px;
+    margin-bottom: 12px;
+}
+
+h3 {
+    color: #fabd2f;
+    font-size: 14pt;
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
+h4, h5, h6 {
+    color: #d79921;
+    margin-top: 12px;
+    margin-bottom: 6px;
+}
+
+/* Links - Gruvbox Blue */
+a {
+    color: #83a598;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #8ec07c;
+    text-decoration: underline;
+}
+
+/* Code blocks - Darker bg with green text */
+pre, code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 10pt;
+}
+
+code {
+    background-color: #3c3836;
+    color: #b8bb26;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+pre {
+    background-color: #1d2021;
+    color: #b8bb26;
+    padding: 12px 16px;
+    border-radius: 6px;
+    border-left: 4px solid #458588;
+    overflow-x: auto;
+    margin: 12px 0;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 10pt;
+}
+
+th {
+    background-color: #3c3836;
+    color: #fabd2f;
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid #504945;
+    font-weight: bold;
+}
+
+td {
+    padding: 8px 12px;
+    border: 1px solid #504945;
+    background-color: #282828;
+}
+
+tr:nth-child(even) td {
+    background-color: #32302f;
+}
+
+/* Lists */
+ul, ol {
+    margin: 8px 0;
+    padding-left: 24px;
+}
+
+li {
+    margin: 4px 0;
+}
+
+/* Blockquotes - for important notes */
+blockquote {
+    border-left: 4px solid #d65d0e;
+    background-color: #3c3836;
+    margin: 16px 0;
+    padding: 12px 16px;
+    color: #d5c4a1;
+}
+
+/* Horizontal rules */
+hr {
+    border: none;
+    border-top: 2px solid #504945;
+    margin: 24px 0;
+}
+
+/* Strong/Bold - Gruvbox Aqua */
+strong, b {
+    color: #8ec07c;
+    font-weight: bold;
+}
+
+/* Emphasis/Italic - Gruvbox Purple */
+em, i {
+    color: #d3869b;
+    font-style: italic;
+}
+
+/* Strikethrough */
+del, s {
+    color: #928374;
+    text-decoration: line-through;
+}
+
+/* Mark/Highlight */
+mark {
+    background-color: #d79921;
+    color: #282828;
+    padding: 2px 4px;
+}
+
+/* Status indicators */
+.success, .found {
+    color: #b8bb26;
+}
+
+.warning {
+    color: #fabd2f;
+}
+
+.error, .critical {
+    color: #fb4934;
+}
+
+.info {
+    color: #83a598;
+}
+
+/* Paragraphs */
+p {
+    margin: 8px 0;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 12px 0;
+}
+
+/* Page break helpers */
+.page-break {
+    page-break-after: always;
+}
+
+.no-break {
+    page-break-inside: avoid;
+}
+
+/* Report header styling */
+.report-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 3px solid #fe8019;
+}
+
+.report-date {
+    color: #928374;
+    font-size: 10pt;
+}
+
+.report-target {
+    color: #fabd2f;
+    font-size: 20pt;
+    font-weight: bold;
+}
+
+/* Findings summary box */
+.findings-box {
+    background-color: #3c3836;
+    border: 2px solid #504945;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+/* Username/email/IP highlighting */
+.username, .email, .ip {
+    font-family: monospace;
+    background-color: #3c3836;
+    color: #83a598;
+    padding: 2px 6px;
+    border-radius: 3px;
+}

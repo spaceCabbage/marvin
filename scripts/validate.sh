@@ -1,10 +1,10 @@
 #!/bin/bash
-# ClaudeVM Installation Validator
+# Marvin Installation Validator
 
 set -e
 
 echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║              ClaudeVM Installation Validator                   ║"
+echo "║              Marvin Installation Validator                   ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -49,8 +49,6 @@ REQUIRED_FILES=(
     "Makefile"
     ".env.example"
     "scripts/entrypoint.sh"
-    "scripts/dev-mode.sh"
-    "scripts/pentest-mode.sh"
     "scripts/init-mcp.sh"
     "workspace/.claude/settings.json"
     "workspace/.claude/mcp-servers.json"
@@ -85,7 +83,7 @@ fi
 echo ""
 echo "════════════════════════════════════════════════════════════════"
 if [ $ERRORS -eq 0 ]; then
-    echo "✓ All checks passed! ClaudeVM is ready."
+    echo "✓ All checks passed! Marvin is ready."
     echo ""
     echo "Next steps:"
     echo "  1. make setup      # Configure (if not done)"

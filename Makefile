@@ -1,4 +1,4 @@
-# ClaudeVM Makefile
+# Marvin Makefile
 # Intelligent build and deployment automation
 
 # Colors for output
@@ -62,7 +62,7 @@ COMPOSE := docker compose $(COMPOSE_FILES)
 .PHONY: help
 help: ## Show this help message
 	@echo -e "$(BLUE)╔════════════════════════════════════════════════════════════════╗$(NC)"
-	@echo -e "$(BLUE)║              ClaudeVM - Build & Deployment System             ║$(NC)"
+	@echo -e "$(BLUE)║              Marvin - Build & Deployment System             ║$(NC)"
 	@echo -e "$(BLUE)╚════════════════════════════════════════════════════════════════╝$(NC)"
 	@echo -e ""
 	@echo -e "$(YELLOW)Detected Platform:$(NC) $(DETECTED_PLATFORM)"
@@ -83,7 +83,7 @@ help: ## Show this help message
 .PHONY: setup
 setup: ## First-time setup: generate .env, build, start, authenticate
 	@echo -e "$(BLUE)╔══════════════════════════════════════╗$(NC)"
-	@echo -e "$(BLUE)║         ClaudeVM Setup               ║$(NC)"
+	@echo -e "$(BLUE)║         Marvin Setup               ║$(NC)"
 	@echo -e "$(BLUE)╚══════════════════════════════════════╝$(NC)"
 	@echo ""
 	@if [ ! -f .env ]; then \
@@ -102,7 +102,7 @@ setup: ## First-time setup: generate .env, build, start, authenticate
 	@echo ""
 	@echo -e "$(YELLOW)Authenticating Claude Code...$(NC)"
 	@echo -e "$(YELLOW)A browser window will open for OAuth login$(NC)"
-	@$(COMPOSE) exec claudevm-main claude login
+	@$(COMPOSE) exec marvin-main claude login
 	@echo ""
 	@echo -e "$(GREEN)╔══════════════════════════════════════╗$(NC)"
 	@echo -e "$(GREEN)║         Setup Complete!              ║$(NC)"
@@ -110,28 +110,27 @@ setup: ## First-time setup: generate .env, build, start, authenticate
 	@echo ""
 	@$(MAKE) --no-print-directory doctor
 	@echo ""
-	@echo -e "  Run: $(BLUE)make claude$(NC) to start using ClaudeVM"
+	@echo -e "  Run: $(BLUE)make claude$(NC) to start using Marvin"
 	@echo ""
 
 .PHONY: build
 build: ## Build Docker image for current platform
-	@echo -e "$(BLUE)Building ClaudeVM for $(PLATFORM)...$(NC)"
-	@echo -e "$(YELLOW)This may take 10-15 minutes on first build$(NC)"
+	@echo -e "$(BLUE)Building Marvin for $(PLATFORM)...$(NC)"
 	docker build \
 		--build-arg INSTALL_METASPLOIT=$(INSTALL_METASPLOIT) \
-		-t claudevm:latest \
+		-t marvin:latest \
 		-f docker/Dockerfile \
 		.
 	@echo -e "$(GREEN)✓$(NC) Build complete"
 
 .PHONY: build-clean
 build-clean: ## Build Docker image without cache (fresh build)
-	@echo -e "$(BLUE)Building ClaudeVM from scratch (no cache)...$(NC)"
+	@echo -e "$(BLUE)Building Marvin from scratch (no cache)...$(NC)"
 	@echo -e "$(YELLOW)This will take longer than a cached build$(NC)"
 	docker build \
 		--no-cache \
 		--build-arg INSTALL_METASPLOIT=$(INSTALL_METASPLOIT) \
-		-t claudevm:latest \
+		-t marvin:latest \
 		-f docker/Dockerfile \
 		.
 	@echo -e "$(GREEN)✓$(NC) Clean build complete"
@@ -139,7 +138,7 @@ build-clean: ## Build Docker image without cache (fresh build)
 .PHONY: up
 up: ## Start containers in background
 	@$(COMPOSE) up -d
-	@echo -e "$(GREEN)✓$(NC) ClaudeVM running"
+	@echo -e "$(GREEN)✓$(NC) Marvin running"
 	@echo -e "  Launch Claude: $(BLUE)make claude$(NC)"
 	@echo -e "  Open shell:    $(BLUE)make shell$(NC)"
 
@@ -149,25 +148,25 @@ claude: ## Launch Claude Code directly
 		echo -e "$(RED)ERROR: Docker not running$(NC)"; \
 		exit 1; \
 	fi
-	@if ! $(COMPOSE) ps | grep -q "claudevm-main.*Up"; then \
-		echo -e "$(RED)ERROR: ClaudeVM is not running$(NC)"; \
+	@if ! $(COMPOSE) ps | grep -q "marvin-main.*Up"; then \
+		echo -e "$(RED)ERROR: Marvin is not running$(NC)"; \
 		echo -e "$(YELLOW)Start with:$(NC) make up"; \
 		exit 1; \
 	fi
-	$(COMPOSE) exec claudevm-main claude
+	$(COMPOSE) exec marvin-main claude
 
 .PHONY: shell
-shell: ## Open bash shell in ClaudeVM
+shell: ## Open bash shell in Marvin
 	@if ! docker info >/dev/null 2>&1; then \
 		echo -e "$(RED)ERROR: Docker not running$(NC)"; \
 		exit 1; \
 	fi
-	@if ! $(COMPOSE) ps | grep -q "claudevm-main.*Up"; then \
-		echo -e "$(RED)ERROR: ClaudeVM is not running$(NC)"; \
+	@if ! $(COMPOSE) ps | grep -q "marvin-main.*Up"; then \
+		echo -e "$(RED)ERROR: Marvin is not running$(NC)"; \
 		echo -e "$(YELLOW)Start with:$(NC) make up"; \
 		exit 1; \
 	fi
-	$(COMPOSE) exec claudevm-main bash
+	$(COMPOSE) exec marvin-main bash
 
 .PHONY: connect
 connect: shell ## Alias for shell (backwards compat)
@@ -175,7 +174,7 @@ connect: shell ## Alias for shell (backwards compat)
 .PHONY: down
 down: ## Stop containers
 	@$(COMPOSE) down
-	@echo -e "$(GREEN)✓$(NC) ClaudeVM stopped"
+	@echo -e "$(GREEN)✓$(NC) Marvin stopped"
 
 .PHONY: logs
 logs: ## Follow container logs
@@ -198,13 +197,9 @@ login: ## Re-authenticate Claude Code (if needed)
 	@echo -e "$(BLUE)Authenticating Claude Code...$(NC)"
 	@echo -e "$(YELLOW)This will open a browser for OAuth login$(NC)"
 	@echo ""
-	$(COMPOSE) exec claudevm-main claude login
+	$(COMPOSE) exec marvin-main claude login
 	@echo ""
 	@echo -e "$(GREEN)✓$(NC) Authentication complete!"
-
-.PHONY: shell
-shell: ## Open a bash shell in the container
-	$(COMPOSE) exec claudevm-main /bin/bash
 
 .PHONY: status
 status: ## Show container status
@@ -216,18 +211,18 @@ status: ## Show container status
 
 .PHONY: vps-simple-up
 vps-simple-up: ## Start on VPS without domain (SSH tunnel access)
-	@echo -e "$(BLUE)Starting ClaudeVM for VPS (no domain)...$(NC)"
+	@echo -e "$(BLUE)Starting Marvin for VPS (no domain)...$(NC)"
 	@echo -e "$(YELLOW)Access via SSH tunnel:$(NC)"
 	@echo -e "  ssh -L 8080:localhost:8080 user@your-vps"
 	@echo ""
 	VPS_SIMPLE=1 $(COMPOSE) up -d
-	@echo -e "$(GREEN)✓$(NC) ClaudeVM running (VPS simple mode)"
+	@echo -e "$(GREEN)✓$(NC) Marvin running (VPS simple mode)"
 
 .PHONY: vps-up
 vps-up: ## Start on VPS with domain (Caddy/HTTPS)
-	@echo -e "$(BLUE)Starting ClaudeVM for VPS (with Caddy)...$(NC)"
+	@echo -e "$(BLUE)Starting Marvin for VPS (with Caddy)...$(NC)"
 	VPS=1 $(COMPOSE) up -d
-	@echo -e "$(GREEN)✓$(NC) ClaudeVM running (VPS mode)"
+	@echo -e "$(GREEN)✓$(NC) Marvin running (VPS mode)"
 
 # =============================================================================
 # Cleanup
@@ -240,8 +235,8 @@ clean: ## Remove containers and volumes
 
 .PHONY: clean-all
 clean-all: clean ## Remove everything including images
-	@docker rmi claudevm:latest 2>/dev/null || true
-	@echo -e "$(GREEN)✓$(NC) Removed ClaudeVM image"
+	@docker rmi marvin:latest 2>/dev/null || true
+	@echo -e "$(GREEN)✓$(NC) Removed Marvin image"
 
 .PHONY: purge
 purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
@@ -250,7 +245,7 @@ purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
 	@echo -e "$(RED)╚════════════════════════════════════════════════════════════════╝$(NC)"
 	@echo ""
 	@echo -e "$(YELLOW)This will permanently delete:$(NC)"
-	@echo -e "  • User data (pentest/, data.db, preferences)"
+	@echo -e "  • User data (engagements/, data.db, preferences)"
 	@echo -e "  • Claude auth (requires re-login)"
 	@echo -e "  • Docker images and build cache"
 	@echo -e "  • Your .env configuration"
@@ -265,7 +260,7 @@ purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
 		echo -e "$(YELLOW)Stopping containers...$(NC)"; \
 		$(COMPOSE) down -v 2>/dev/null || true; \
 		echo -e "$(YELLOW)Removing Docker image...$(NC)"; \
-		docker rmi claudevm:latest 2>/dev/null || true; \
+		docker rmi marvin:latest 2>/dev/null || true; \
 		echo -e "$(YELLOW)Pruning build cache...$(NC)"; \
 		docker builder prune -f 2>/dev/null || true; \
 		echo -e "$(YELLOW)Removing user data (preserving config)...$(NC)"; \
@@ -298,7 +293,7 @@ purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
 .PHONY: doctor
 doctor: ## Check system health and diagnose issues
 	@echo -e "$(BLUE)╔══════════════════════════════════════╗$(NC)"
-	@echo -e "$(BLUE)║       ClaudeVM Diagnostics           ║$(NC)"
+	@echo -e "$(BLUE)║       Marvin Diagnostics           ║$(NC)"
 	@echo -e "$(BLUE)╚══════════════════════════════════════╝$(NC)"
 	@echo ""
 	@# Check Docker
@@ -311,13 +306,13 @@ doctor: ## Check system health and diagnose issues
 	@if [ -f .env ]; then echo -e "$(GREEN)✓ Present$(NC)"; else echo -e "$(YELLOW)⚠ Missing (run make setup)$(NC)"; fi
 	@# Check image
 	@echo -n "Docker image: "
-	@if docker images claudevm:latest --format "{{.ID}}" 2>/dev/null | grep -q .; then echo -e "$(GREEN)✓ Built$(NC)"; else echo -e "$(YELLOW)⚠ Not built (run make build)$(NC)"; fi
+	@if docker images marvin:latest --format "{{.ID}}" 2>/dev/null | grep -q .; then echo -e "$(GREEN)✓ Built$(NC)"; else echo -e "$(YELLOW)⚠ Not built (run make build)$(NC)"; fi
 	@# Check container
 	@echo -n "Container: "
-	@if $(COMPOSE) ps 2>/dev/null | grep -q "claudevm-main.*Up"; then echo -e "$(GREEN)✓ Running$(NC)"; else echo -e "$(YELLOW)⚠ Not running (run make up)$(NC)"; fi
+	@if $(COMPOSE) ps 2>/dev/null | grep -q "marvin-main.*Up"; then echo -e "$(GREEN)✓ Running$(NC)"; else echo -e "$(YELLOW)⚠ Not running (run make up)$(NC)"; fi
 	@# Check auth (if container running)
 	@echo -n "Claude auth: "
-	@if $(COMPOSE) exec -T claudevm-main test -f /root/.config/claude/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make claude to login)$(NC)"; fi
+	@if $(COMPOSE) exec -T marvin-main test -f /root/.config/claude/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make claude to login)$(NC)"; fi
 	@# Check MCP config
 	@echo -n "MCP config: "
 	@if [ -f workspace/.claude/mcp-servers.json ]; then \

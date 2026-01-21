@@ -1,8 +1,8 @@
-# ClaudeVM: VPS Deployment Overrides
+# Marvin: VPS Deployment Overrides
 # Use this for cloud VPS deployments with domain names
 
 services:
-  claudevm-main:
+  marvin-main:
     # No privileged mode on VPS for security
     privileged: false
 
@@ -19,9 +19,9 @@ services:
       - SYS_PTRACE
 
   # Caddy reverse proxy for HTTPS
-  claudevm-caddy:
+  marvin-caddy:
     image: caddy:2-alpine
-    container_name: claudevm-caddy
+    container_name: marvin-caddy
     restart: unless-stopped
 
     environment:
@@ -38,11 +38,11 @@ services:
       - ./config/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
 
       # Persistent certificates and data
-      - claudevm-caddy-data:/data
-      - claudevm-caddy-config:/config
+      - marvin-caddy-data:/data
+      - marvin-caddy-config:/config
 
     networks:
-      - claudevm-net
+      - marvin-net
 
     healthcheck:
       test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:80/health']
@@ -52,15 +52,15 @@ services:
       start_period: 10s
 
     depends_on:
-      - claudevm-main
+      - marvin-main
 
   # Override Chrome to not use profiles (always enabled on VPS)
-  claudevm-chrome:
+  marvin-chrome:
     profiles: []
 
 # Additional volumes for Caddy
 volumes:
-  claudevm-caddy-data:
+  marvin-caddy-data:
     driver: local
-  claudevm-caddy-config:
+  marvin-caddy-config:
     driver: local

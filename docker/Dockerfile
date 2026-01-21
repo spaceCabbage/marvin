@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# ClaudeVM: Multi-Platform Security Research & Development Environment
+# Marvin: Multi-Platform Security Research & Development Environment
 # Supports: linux/amd64, linux/arm64
 
 # Build arguments
@@ -176,11 +176,10 @@ RUN --mount=type=cache,target=/root/.cache/uv \
         yara-python && \
     sqlmap --version
 
-# Install OSINT tools
+# Install OSINT tools (maigret replaces sherlock - more sites, better maintained)
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system --break-system-packages \
         theHarvester \
-        sherlock-project \
         Photon \
         dnspython \
         phonenumbers \
@@ -191,7 +190,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
         spiderfoot \
         bbot \
         maigret \
-        metagoofil && \
+        metagoofil \
+        h8mail && \
     theHarvester --version || echo "theHarvester installed"
 
 # Install recon-ng framework
@@ -211,7 +211,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         curl \
         jq \
         lynx \
-        w3m
+        w3m \
+        pandoc
+
+# Install weasyprint for PDF generation with dark theme support
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --break-system-packages weasyprint && \
+    weasyprint --version
 
 # Install OWASP ZAP (headless)
 RUN wget -q https://github.com/zaproxy/zaproxy/releases/download/v2.17.0/ZAP_2.17.0_Linux.tar.gz -O /tmp/zap.tar.gz && \
@@ -392,8 +398,6 @@ RUN --mount=type=bind,from=metasploit-stage,source=/opt,target=/mnt/msf-opt \
 
 # Copy entrypoint and helper scripts
 COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
-COPY scripts/dev-mode.sh /usr/local/bin/dev-mode.sh
-COPY scripts/pentest-mode.sh /usr/local/bin/pentest-mode.sh
 COPY scripts/init-mcp.sh /usr/local/bin/init-mcp.sh
 COPY scripts/monitor-mode.sh /usr/local/bin/monitor-mode.sh
 
@@ -418,7 +422,7 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["/bin/bash"]
 
 # Labels for multi-arch
-LABEL org.opencontainers.image.title="ClaudeVM"
+LABEL org.opencontainers.image.title="Marvin"
 LABEL org.opencontainers.image.description="Multi-platform Claude Code security research and development environment"
-LABEL org.opencontainers.image.authors="ClaudeVM Project"
-LABEL org.opencontainers.image.source="https://github.com/spaceCabbage/claudevm"
+LABEL org.opencontainers.image.authors="Marvin Project"
+LABEL org.opencontainers.image.source="https://github.com/spaceCabbage/Marvin"

@@ -1,8 +1,8 @@
-# ClaudeVM: Raspberry Pi / Local Machine Overrides
+# Marvin: Raspberry Pi / Local Machine Overrides
 # Use this for RPi or local machines with USB WiFi adapters
 
 services:
-  claudevm-main:
+  marvin-main:
     # Privileged mode for USB and monitor mode
     privileged: true
 
@@ -29,12 +29,12 @@ services:
 
     # Enable Chrome by default on RPi
     depends_on:
-      claudevm-chrome:
+      marvin-chrome:
         condition: service_healthy
         required: false
 
   # Use ARM64-optimized Chrome for RPi
-  claudevm-chrome:
+  marvin-chrome:
     # Override with ARM-compatible image
     image: linuxserver/chromium:arm64v8-latest
 

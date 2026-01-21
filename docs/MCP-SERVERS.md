@@ -1,6 +1,6 @@
 # MCP Servers Documentation
 
-Complete guide to Model Context Protocol (MCP) servers in ClaudeVM.
+Complete guide to Model Context Protocol (MCP) servers in Marvin.
 
 ## What are MCP Servers?
 
@@ -14,7 +14,7 @@ MCP (Model Context Protocol) servers provide Claude Code with access to external
 
 ## Pre-installed MCP Servers
 
-ClaudeVM includes these MCP servers pre-configured:
+Marvin includes these MCP servers pre-configured:
 
 ### Filesystem (`filesystem`)
 
@@ -260,7 +260,7 @@ Add required environment variables to `.env`:
 MY_API_KEY=your-key-here
 ```
 
-Restart ClaudeVM:
+Restart Marvin:
 ```bash
 make restart
 ```
@@ -361,7 +361,7 @@ npx -y @modelcontextprotocol/server-filesystem /workspace
 make logs
 
 # Look for MCP-related messages
-docker compose logs claudevm-main | grep -i mcp
+docker compose logs Marvin-main | grep -i mcp
 ```
 
 ### Common Issues
@@ -369,10 +369,10 @@ docker compose logs claudevm-main | grep -i mcp
 **"MCP server not found"**
 ```bash
 # Ensure npx is available
-docker compose exec claudevm-main npx --version
+docker compose exec Marvin-main npx --version
 
 # Ensure Node.js is installed
-docker compose exec claudevm-main node --version
+docker compose exec Marvin-main node --version
 
 # Reinstall if needed
 make build
@@ -433,4 +433,4 @@ Want to create your own MCP server? See:
 
 ---
 
-For issues or questions about MCP servers, see [GitHub Issues](https://github.com/spaceCabbage/claudevm/issues).
+For issues or questions about MCP servers, see [GitHub Issues](https://github.com/spaceCabbage/Marvin/issues).

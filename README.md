@@ -1,14 +1,16 @@
-# ClaudeVM
+# Marvin
 
-**Multi-Platform Claude Code Security Research & Development Environment**
+**Sophisticated Autonomous Pentesting Laboratory**
 
-ClaudeVM is a containerized Linux environment that gives Claude Code full system access with security research tools, multi-platform support (x86_64/ARM64/RPi), and flexible deployment options.
+*A containerized Linux environment that gives Claude Code full system access with security research tools, multi-platform support (x86_64/ARM64/RPi), and flexible deployment options.*
+
+> Named after the Solar Array Pumped Laser from John Ringo's "Live Free or Die" - a machine that can build anything. Marvin is your box that can hack anything.
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/spaceCabbage/claudevm.git
-cd claudevm
+git clone https://github.com/spaceCabbage/marvin.git
+cd marvin
 make setup      # Creates .env and builds image
 make up         # Start container
 make claude     # Launch Claude (auto-prompts login on first run)
@@ -53,7 +55,7 @@ Your home directory (`~` = `/workspace`) persists across sessions:
 - `~/.bashrc` - Shell configuration
 - `~/.claude/` - Claude Code settings
 - `~/.claude-user-prefs` - Your preferences (Claude remembers you)
-- `~/pentest/` - Organized pentest engagements
+- `~/engagements/` - Organized OSINT/pentest engagements by client
 - `~/data.db` - SQLite database
 
 Tell Claude your name, email, GitHub username - it saves them automatically.
@@ -68,13 +70,14 @@ Tell Claude your name, email, GitHub username - it saves them automatically.
 
 ## Security Tools Included
 
-- **OSINT**: theHarvester, Sherlock, maigret, bbot, recon-ng, SpiderFoot
+- **OSINT**: maigret (2000+ sites), theHarvester, bbot, recon-ng, SpiderFoot, h8mail, holehe
 - **Subdomain/Recon**: subfinder, amass, nuclei, httpx, dnsx
 - **Network**: nmap, masscan, netcat, tcpdump
 - **Web**: sqlmap, nikto, wpscan, sslscan, OWASP ZAP
 - **Wireless**: aircrack-ng suite
 - **Password**: john, hashcat, hydra
 - **Exploitation**: Metasploit (optional)
+- **Reporting**: pandoc, weasyprint (dark Gruvbox PDF generation)
 
 ## MCP Servers
 
@@ -120,7 +123,7 @@ Edit `.env` for:
 
 ## Security Considerations
 
-ClaudeVM runs with elevated privileges. Use on:
+Marvin runs with elevated privileges. Use on:
 - Dedicated hardware
 - Isolated VMs
 - Test networks
