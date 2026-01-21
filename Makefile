@@ -98,17 +98,10 @@ setup: ## First-time setup: generate .env, build, start, authenticate
 	@echo ""
 	@echo -e "$(YELLOW)Starting container...$(NC)"
 	@$(COMPOSE) up -d
-	@sleep 2
-	@echo ""
-	@echo -e "$(YELLOW)Authenticating Claude Code...$(NC)"
-	@echo -e "$(YELLOW)A browser window will open for OAuth login$(NC)"
-	@$(COMPOSE) exec marvin-vm claude login
 	@echo ""
 	@echo -e "$(GREEN)╔══════════════════════════════════════╗$(NC)"
 	@echo -e "$(GREEN)║         Setup Complete!              ║$(NC)"
 	@echo -e "$(GREEN)╚══════════════════════════════════════╝$(NC)"
-	@echo ""
-	@$(MAKE) --no-print-directory doctor
 	@echo ""
 	@echo -e "  Run: $(BLUE)make claude$(NC) to start using Marvin"
 	@echo ""

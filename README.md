@@ -1,10 +1,8 @@
 # Marvin
 
-**Sophisticated Autonomous Pentesting Laboratory**
 
-*A containerized Linux environment that gives Claude Code full system access with security research tools, multi-platform support (x86_64/ARM64/RPi), and flexible deployment options.*
+A containerized Linux environment that gives Claude Code full system access with security, pentesting, research and OSINT tools.
 
-> Named after the Solar Array Pumped Laser from John Ringo's "Live Free or Die" - a machine that can build anything. Marvin is your box that can hack anything.
 
 ## Quick Start
 
@@ -16,23 +14,6 @@ make up         # Start container
 make claude     # Launch Claude (auto-prompts login on first run)
 ```
 
-## Daily Usage
-
-```bash
-make up         # Start container
-make claude     # Launch Claude Code
-make shell      # Bash shell access
-make down       # Stop container
-```
-
-## Features
-
-- **Multi-Architecture**: Native x86_64 and ARM64 (Raspberry Pi)
-- **WiFi Security**: USB adapter support with monitor mode (AWUS036ACS)
-- **Security Tools**: nmap, masscan, sqlmap, Metasploit, aircrack-ng, and more
-- **MCP Servers**: Filesystem, Git, Docker, Database, Browser automation
-- **Persistent Memory**: Claude remembers your preferences across sessions
-- **Proactive**: Claude searches for tools and suggests installations
 
 ## Commands
 
@@ -49,71 +30,42 @@ make status     # Container status
 make clean      # Remove containers/volumes
 ```
 
-## Home Directory
+## How it Works
 
-Your home directory (`~` = `/workspace`) persists across sessions:
-- `~/.bashrc` - Shell configuration
-- `~/.claude/` - Claude Code settings
-- `~/.claude-user-prefs` - Your preferences (Claude remembers you)
-- `~/engagements/` - Organized OSINT/pentest engagements by client
-- `~/data.db` - SQLite database
+Marvin runs Claude Code inside a Docker container loaded with security research tools. Everything you do persists between sessions - your files, settings, and Claude's memory of you all stay put when you restart.
 
-Tell Claude your name, email, GitHub username - it saves them automatically.
+### What Claude Can Do
 
-## Platform Support
+Marvin comes with built-in **skills** that guide Claude through complex workflows:
 
-| Platform                 | Status       | Notes                |
-|--------------------------|--------------|----------------------|
-| x86_64 (Intel/AMD)       | Full Support | Best performance     |
-| ARM64 (Raspberry Pi 4/5) | Full Support | WiFi adapter support |
-| VPS (Cloud)              | Full Support | With domain/HTTPS    |
+- **OSINT Investigations** - Hunt down usernames across 2000+ sites, find email addresses, check data breaches, dig through public records, and piece together digital footprints
+- **Penetration Testing** - Network scanning, web app testing, vulnerability assessment, and exploitation (with your permission)
+- **Professional Reports** - Every investigation ends with 3 deliverables: a full technical report, a dark-themed PDF, and a quick summary you can paste into chat apps
 
-## Security Tools Included
+### Where Your Work Lives
 
-- **OSINT**: maigret (2000+ sites), theHarvester, bbot, recon-ng, SpiderFoot, h8mail, holehe
-- **Subdomain/Recon**: subfinder, amass, nuclei, httpx, dnsx
-- **Network**: nmap, masscan, netcat, tcpdump
-- **Web**: sqlmap, nikto, wpscan, sslscan, OWASP ZAP
-- **Wireless**: aircrack-ng suite
-- **Password**: john, hashcat, hydra
-- **Exploitation**: Metasploit (optional)
-- **Reporting**: pandoc, weasyprint (dark Gruvbox PDF generation)
+All your investigations get organized under `~/engagements/`:
 
-## MCP Servers
-
-- **Filesystem**: File operations
-- **Git**: Repository management
-- **Docker**: Container control
-- **SQLite**: Local database (~/data.db)
-- **GitHub**: PR/issue management (with token)
-- **Context7**: Documentation querying
-- **Playwright**: Browser automation
-
-## VPS Deployment
-
-```bash
-make setup          # Configure domain
-make build
-make vps-up         # Starts with Caddy/HTTPS
+```
+~/engagements/
+└── acme-corp/                      # Client folder
+    └── osint_2026-01-21/           # Investigation (type + date)
+        ├── report/                 # Your deliverables
+        │   ├── OSINT_REPORT.md     # Full technical writeup
+        │   ├── OSINT_REPORT.pdf    # Dark Gruvbox-themed PDF
+        │   └── SUMMARY.txt         # Quick share version
+        ├── raw/                    # Tool outputs (maigret, domains, etc.)
+        └── evidence/               # Screenshots and proof
 ```
 
-## WiFi Security (RPi)
+Start a new investigation for the same client? Claude creates a new dated folder automatically.
 
-```bash
-# Inside container, verify adapter
-iwconfig wlan1
+### How Claude Remembers You
 
-# Enable monitor mode
-monitor-mode.sh wlan1
-```
+Tell Claude your name, email, or preferences once - it saves them to `~/.claude-user-prefs` and remembers across sessions.
 
-## Configuration
+Your Claude auth, shell config, and all settings persist in the workspace, so you only need to log in once.
 
-Edit `.env` for:
-- `INSTALL_METASPLOIT`: true/false
-- `WIFI_INTERFACE`: wlan1 (RPi)
-- `GITHUB_TOKEN`: GitHub MCP server
-- VPS domain settings
 
 ## Documentation
 
@@ -121,9 +73,3 @@ Edit `.env` for:
 - [docs/MCP-SERVERS.md](docs/MCP-SERVERS.md) - MCP configuration
 - [docs/CONFIGURATION.md](docs/CONFIGURATION.md) - Configuration options
 
-## Security Considerations
-
-Marvin runs with elevated privileges. Use on:
-- Dedicated hardware
-- Isolated VMs
-- Test networks
