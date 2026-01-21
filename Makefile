@@ -102,7 +102,7 @@ setup: ## First-time setup: generate .env, build, start, authenticate
 	@echo ""
 	@echo -e "$(YELLOW)Authenticating Claude Code...$(NC)"
 	@echo -e "$(YELLOW)A browser window will open for OAuth login$(NC)"
-	@$(COMPOSE) exec marvin-main claude login
+	@$(COMPOSE) exec marvin-vm claude login
 	@echo ""
 	@echo -e "$(GREEN)╔══════════════════════════════════════╗$(NC)"
 	@echo -e "$(GREEN)║         Setup Complete!              ║$(NC)"
@@ -148,12 +148,12 @@ claude: ## Launch Claude Code directly
 		echo -e "$(RED)ERROR: Docker not running$(NC)"; \
 		exit 1; \
 	fi
-	@if ! $(COMPOSE) ps | grep -q "marvin-main.*Up"; then \
+	@if ! $(COMPOSE) ps | grep -q "marvin-vm.*Up"; then \
 		echo -e "$(RED)ERROR: Marvin is not running$(NC)"; \
 		echo -e "$(YELLOW)Start with:$(NC) make up"; \
 		exit 1; \
 	fi
-	$(COMPOSE) exec marvin-main claude
+	$(COMPOSE) exec marvin-vm claude
 
 .PHONY: shell
 shell: ## Open bash shell in Marvin
@@ -161,12 +161,12 @@ shell: ## Open bash shell in Marvin
 		echo -e "$(RED)ERROR: Docker not running$(NC)"; \
 		exit 1; \
 	fi
-	@if ! $(COMPOSE) ps | grep -q "marvin-main.*Up"; then \
+	@if ! $(COMPOSE) ps | grep -q "marvin-vm.*Up"; then \
 		echo -e "$(RED)ERROR: Marvin is not running$(NC)"; \
 		echo -e "$(YELLOW)Start with:$(NC) make up"; \
 		exit 1; \
 	fi
-	$(COMPOSE) exec marvin-main bash
+	$(COMPOSE) exec marvin-vm bash
 
 .PHONY: connect
 connect: shell ## Alias for shell (backwards compat)
@@ -197,7 +197,7 @@ login: ## Re-authenticate Claude Code (if needed)
 	@echo -e "$(BLUE)Authenticating Claude Code...$(NC)"
 	@echo -e "$(YELLOW)This will open a browser for OAuth login$(NC)"
 	@echo ""
-	$(COMPOSE) exec marvin-main claude login
+	$(COMPOSE) exec marvin-vm claude login
 	@echo ""
 	@echo -e "$(GREEN)✓$(NC) Authentication complete!"
 
@@ -309,10 +309,10 @@ doctor: ## Check system health and diagnose issues
 	@if docker images marvin:latest --format "{{.ID}}" 2>/dev/null | grep -q .; then echo -e "$(GREEN)✓ Built$(NC)"; else echo -e "$(YELLOW)⚠ Not built (run make build)$(NC)"; fi
 	@# Check container
 	@echo -n "Container: "
-	@if $(COMPOSE) ps 2>/dev/null | grep -q "marvin-main.*Up"; then echo -e "$(GREEN)✓ Running$(NC)"; else echo -e "$(YELLOW)⚠ Not running (run make up)$(NC)"; fi
+	@if $(COMPOSE) ps 2>/dev/null | grep -q "marvin-vm.*Up"; then echo -e "$(GREEN)✓ Running$(NC)"; else echo -e "$(YELLOW)⚠ Not running (run make up)$(NC)"; fi
 	@# Check auth (if container running)
 	@echo -n "Claude auth: "
-	@if $(COMPOSE) exec -T marvin-main test -f /root/.config/claude/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make claude to login)$(NC)"; fi
+	@if $(COMPOSE) exec -T marvin-vm test -f /root/.config/claude/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make claude to login)$(NC)"; fi
 	@# Check MCP config
 	@echo -n "MCP config: "
 	@if [ -f workspace/.claude/mcp-servers.json ]; then \

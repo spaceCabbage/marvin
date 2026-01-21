@@ -27,7 +27,7 @@
     
     # MCP server proxy (if needed for remote access)
     handle /mcp/* {
-        reverse_proxy Marvin-main:3000 {
+        reverse_proxy marvin-vm:3000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}

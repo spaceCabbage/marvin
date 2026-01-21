@@ -417,7 +417,7 @@ Run multiple Marvin instances for different purposes:
 cp -r Marvin Marvin-dev
 
 # Edit docker-compose.yml to change container names
-# Change: Marvin-main -> Marvin-dev-main
+# Change: marvin-vm -> Marvin-dev-main
 
 # Use different .env configuration
 cd Marvin-dev
@@ -464,7 +464,7 @@ make logs
 cat .env | grep ANTHROPIC_API_KEY
 
 # Test authentication
-docker compose exec Marvin-main claude --version
+docker compose exec marvin-vm claude --version
 ```
 
 **MCP servers not loading:**
@@ -473,10 +473,10 @@ docker compose exec Marvin-main claude --version
 cat workspace/.claude/mcp-servers.json | jq
 
 # Test npx availability
-docker compose exec Marvin-main npx --version
+docker compose exec marvin-vm npx --version
 
 # Check Node.js
-docker compose exec Marvin-main node --version
+docker compose exec marvin-vm node --version
 ```
 
 **Permission denied errors:**
@@ -497,7 +497,7 @@ docker network ls
 docker network inspect Marvin-net
 
 # Check ports
-docker compose port Marvin-main
+docker compose port marvin-vm
 ```
 
 **VPS domain not resolving:**

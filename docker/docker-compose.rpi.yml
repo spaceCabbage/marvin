@@ -2,7 +2,7 @@
 # Use this for RPi or local machines with USB WiFi adapters
 
 services:
-  marvin-main:
+  marvin-vm:
     # Privileged mode for USB and monitor mode
     privileged: true
 

@@ -2,7 +2,7 @@
 # Use this for cloud VPS deployments with domain names
 
 services:
-  marvin-main:
+  marvin-vm:
     # No privileged mode on VPS for security
     privileged: false
 
@@ -52,7 +52,7 @@ services:
       start_period: 10s
 
     depends_on:
-      - marvin-main
+      - marvin-vm
 
   # Override Chrome to not use profiles (always enabled on VPS)
   marvin-chrome:

@@ -361,7 +361,7 @@ npx -y @modelcontextprotocol/server-filesystem /workspace
 make logs
 
 # Look for MCP-related messages
-docker compose logs Marvin-main | grep -i mcp
+docker compose logs marvin-vm | grep -i mcp
 ```
 
 ### Common Issues
@@ -369,10 +369,10 @@ docker compose logs Marvin-main | grep -i mcp
 **"MCP server not found"**
 ```bash
 # Ensure npx is available
-docker compose exec Marvin-main npx --version
+docker compose exec marvin-vm npx --version
 
 # Ensure Node.js is installed
-docker compose exec Marvin-main node --version
+docker compose exec marvin-vm node --version
 
 # Reinstall if needed
 make build

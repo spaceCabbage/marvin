@@ -6,7 +6,7 @@
 #   Then access: http://localhost:8080
 
 services:
-  marvin-main:
+  marvin-vm:
     # No privileged mode on VPS for security
     privileged: false
 
