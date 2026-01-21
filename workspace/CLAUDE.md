@@ -177,6 +177,27 @@ Your home directory (`~` or `/workspace`) persists across sessions:
 
 ## Engagement Tracking
 
+### Folder Structure
+```
+~/engagements/[client]/[type]_[YYYY-MM-DD]/
+```
+
+**For returning clients:**
+1. Check if `~/engagements/[client]/` already exists using filesystem tools
+2. If yes, list previous engagement folders to reference past work
+3. Create a NEW dated subfolder for this session (don't overwrite old ones)
+4. Reference findings from previous sessions when relevant
+
+**Example:** Client "acme-corp" with multiple sessions:
+```
+~/engagements/acme-corp/
+├── osint_2024-01-15/    # First investigation
+├── osint_2024-01-21/    # Follow-up investigation (TODAY)
+└── pentest_2024-02-01/  # Future pentest
+```
+
+### Status Line Tracking
+
 When starting/continuing work on an engagement, **immediately set the current engagement** (if not set):
 
 ```bash
