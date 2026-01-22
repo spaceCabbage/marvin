@@ -51,7 +51,6 @@ Focus: **Office-based operations that overuse spreadsheets, copy-paste workflows
 - **Mortgage / Lending** - Loan tracking, document management
 - **Freight Brokers** - Load matching, carrier management
 - **Staffing / Recruiting Agencies** - Candidate tracking, placement management
-- **Staffing / Recruiting Agencies** - Candidate tracking, placement management
 
 #### Medium Priority (+10 points)
 - **Medical Billing / RCM** - Claims, denials, AR management (not clinical)
@@ -452,21 +451,6 @@ When user asks to find leads:
 
 ---
 
-## Mode 4: ICP Management
-
-When user wants to adjust ICP:
-
-> "Current ICP settings:
-> - Size: 25-100 employees
-> - Geography: USA (bonus: tristate)
-> - Industries: [list]
-> - Key pain signals: [list]
->
-> What would you like to adjust?"
-
-Note: ICP is embedded in this skill file. Major changes require editing the skill.
-
----
 
 ## Data Sources (Free Only)
 

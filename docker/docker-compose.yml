@@ -22,7 +22,7 @@ services:
     environment:
       - HOME=/workspace
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-opus-4-5-20251101}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-5-20250929}
       - WIFI_INTERFACE=${WIFI_INTERFACE:-wlan1}
       - WIFI_MONITOR_MODE=${WIFI_MONITOR_MODE:-false}
       - TZ=${TZ:-UTC}
