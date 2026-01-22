@@ -34,7 +34,7 @@ We're efficiency consultants who happen to build software, not developers waitin
 
 | Criteria      | Target                                            |
 |---------------|---------------------------------------------------|
-| **Size**      | 25-100 employees (SMB sweet spot)                 |
+| **Size**      | 15-50 employees                                   |
 | **Geography** | USA only                                          |
 | **Bonus**     | Tristate area (NY/NJ/CT), Jewish-owned businesses |
 
@@ -130,16 +130,15 @@ Focus: **Office-based operations that overuse spreadsheets, copy-paste workflows
 - Recently raised funding
 - New locations/expansion
 - Technology vendor changes
-- "Digital transformation" mentions
+- "Digital transformation" or similar mentions
 - New COO/VP Ops hired
 
 ### Disqualifiers (Instant Fail)
 
 - In bankruptcy
 - Major layoffs (>20%)
-- Already has large dev team (50+)
+- Already has a dev team (50+)
 - Highly regulated (healthcare PHI, finance trading)
-- Company size <15 or >500 employees
 
 ---
 
@@ -705,6 +704,7 @@ For deep company research, can leverage OSINT patterns:
 - COO / VP Operations
 - General Manager
 - Director of Operations
+- they must have the "otaku" to really want to try cuttign edge tech
 
 **AVOID (no skin in the game):**
 - HR / Recruiters (gatekeepers)
@@ -725,6 +725,7 @@ For deep company research, can leverage OSINT patterns:
 2. **Specific over generic** - "They have 3 data entry clerks" not "they might have manual processes"
 3. **Score honestly** - Don't inflate scores for marginal leads
 4. **Update as you learn** - Store new info in SQLite for future reference
+5. include links to sources by each data mention or use foototes in the output
 
 ### User Involvement (ASK EAGERLY)
 
@@ -736,7 +737,7 @@ For deep company research, can leverage OSINT patterns:
 ### Efficiency
 
 1. **Quick score first** - Don't waste time on obvious non-fits
-2. **Parallel subagents** - Always spawn research in parallel
+2. **Parallel subagents** - *Always* spawn research in parallel
 3. **Store everything** - SQLite lets us query past research
 4. **Reuse intel** - Check if we've researched this company before
 
@@ -754,6 +755,8 @@ Key sections:
 5. **Tech Stack** - What they use, integration opportunities
 6. **Intel** - News, funding, compliance, growth signals
 7. **Next Steps** - Specific outreach plan
+
+make sure to include links to sources colocated with sourced info when showing intel on a company or stuff throughout the dossier
 
 ---
 

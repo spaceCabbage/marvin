@@ -1,9 +1,11 @@
-# Lead Dossier: [COMPANY_NAME]
+### Lead Dossier:
 
-**Generated**: [DATE]
-**Domain**: [domain.com]
-**ICP Score**: [XX]/100 ([GRADE])
-**Recommendation**: [HOT/WARM/COOL/COLD - one line action]
+# [COMPANY_NAME]
+
+- **Generated**: [DATE]
+- **Domain**: [domain.com]
+- **ICP Score**: [XX]/100 ([GRADE])
+- **Recommendation**: [HOT/WARM/COOL/COLD - one line action]
 
 ---
 
@@ -27,11 +29,11 @@
 | **Email**    | [if found]                     |
 | **Phone**    | [if found]                     |
 
-**Background**: [Previous companies, how long at current company, relevant experience]
+**Background**: [Previous companies, how long at current company, relevant experience] (short)
 
-**Why They Care**: [What metrics are they measured on? What keeps them up at night?]
+**Why They Care**: [What metrics are they measured on? What keeps them up at night?] (short)
 
-**Approach Angle**: [How to frame the conversation for THIS person specifically]
+**Approach Angle**: [How to frame the conversation for THIS person specifically] (short)
 
 | Name   | Title   | LinkedIn | Email   | Phone   | Notes          |
 |--------|---------|----------|---------|---------|----------------|
