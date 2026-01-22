@@ -19,7 +19,7 @@ When user asks about:
 2. **Use subagents aggressively** - Spawn parallel agents for different research tracks
 3. **Web search everything** - Use WebSearch tool constantly for news, social, archives, public records
 4. **Install tools as needed** - Don't hesitate to install new tools mid-investigation, confirm with user though.
-5. **Log everything you install** - Add to `~/.claude-user-prefs` immediately
+5. **Log everything you install** - Save to Memory MCP immediately
 6. **Document everything** - All findings go to structured output directory
 7. **Always produce 3 deliverables** - MD report, PDF (dark theme), WhatsApp summary
 
@@ -41,6 +41,7 @@ before starting the engagement, use ask tool to prompt user for additional info 
 
 # 3. Basic username check (if username target)
 maigret [username] --timeout 60 --top-sites 100
+socialscan --username [username]
 
 # 4. Quick domain info (if domain target or found a domain)
 whois [domain]
@@ -48,6 +49,7 @@ dig [domain] ANY
 
 # 5. Basic email check (if email target or found email)
 holehe [email]
+socialscan --email [email]
 ```
 
 **Present findings summary and ASK:**
@@ -86,13 +88,13 @@ Real Name → may reveal → social media, public records, employers
 
 (only if the found info is verified and not a false positive)
 
-| If you find... | Then also run...                                                      |
-|----------------|-----------------------------------------------------------------------|
-| Email address  | `holehe [email]`, `h8mail -t [email]`, search for username part       |
-| Domain         | `subfinder -d [domain]`, `whois [domain]`, `theHarvester -d [domain]` |
-| Username       | `maigret [username]`, web search `"[username]"`                       |
-| Real name      | Web search `"[name]" [location/employer]`, public records             |
-| Company        | `theHarvester -d [company.com]`, LinkedIn search, SEC/OpenCorporates  |
+| If you find... | Then also run...                                                                    |
+|----------------|-------------------------------------------------------------------------------------|
+| Email address  | `holehe [email]`, `socialscan --email [email]`, `h8mail -t [email]`, username part  |
+| Domain         | `subfinder -d [domain]`, `whois [domain]`, `theHarvester -d [domain]`               |
+| Username       | `maigret [username]`, `socialscan --username [username]`, web search `"[username]"` |
+| Real name      | Web search `"[name]" [location/employer]`, public records                           |
+| Company        | `theHarvester -d [company.com]`, LinkedIn search, SEC/OpenCorporates                |
 
 ### Example Flow
 ```
@@ -113,6 +115,7 @@ Real Name → may reveal → social media, public records, employers
 ### Username & Email Discovery
 - **maigret**: Hunt usernames across 2000+ sites (replaces sherlock, more comprehensive)
 - **holehe**: Check if email is registered on various sites
+- **socialscan**: Fast username/email availability checker across platforms (Instagram, Twitter, GitHub, etc.)
 - **h8mail**: Email breach hunting (free tier)
 - **theHarvester**: Email, subdomain, IP discovery from public sources
 
@@ -160,10 +163,10 @@ go install github.com/org/tool@latest
 git clone https://github.com/org/tool && cd tool && make install
 ```
 
-**CRITICAL: Log every installation to preferences:**
-```bash
-# After installing ANY tool, immediately log it:
-echo "installed: <toolname> ($(date +%Y-%m-%d))" >> ~/.claude-user-prefs
+**CRITICAL: Log every installation to Memory MCP:**
+```
+# After installing ANY tool, immediately save it:
+memory.add_observations([{entityName: "installed_tools", contents: ["installed: <toolname> (date)"]}])
 ```
 
 **Proactively search for and suggest tools** - If a task would benefit from a specialized tool, search the web for current best options and offer to install them.
@@ -533,7 +536,7 @@ pandoc "${WORKSPACE}/report/OSINT_REPORT.md" \
 2. **Subagents first** - Spawn parallel research immediately
 3. **Web search constantly** - It's fast and free
 4. **Save everything** - Raw output goes to raw/ folder
-5. **Log all installs** - `echo "installed: X (date)" >> ~/.claude-user-prefs`
+5. **Log all installs** - Save to Memory MCP immediately
 6. **Note sources** - Document where each finding came from
 7. **Cross-reference** - Same username on multiple sites = higher confidence
 

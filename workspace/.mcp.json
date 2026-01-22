@@ -4,36 +4,33 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"],
       "env": {},
-      "disabled": false,
-      "comment": "Persistent knowledge graph memory - CRITICAL for user prefs"
+      "disabled": false
     },
     "sequential-thinking": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
       "env": {},
-      "disabled": false,
-      "comment": "Problem decomposition and reasoning"
+      "disabled": false
     },
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@berthojoris/mcp-sqlite-server", "/workspace/data.db"],
+      "args": ["-y", "mcp-server-sqlite-npx", "/workspace/data.db"],
       "env": {},
-      "disabled": false,
-      "comment": "SQLite database at ~/data.db"
+      "disabled": false
     },
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"],
       "env": {},
-      "disabled": false,
-      "comment": "Documentation lookup for libraries/APIs"
+      "disabled": false
     },
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"],
-      "env": {},
-      "disabled": false,
-      "comment": "Browser automation with headless Chromium"
+      "args": ["-y", "@playwright/mcp@0.0.56", "--browser", "chromium", "--headless", "--no-sandbox", "--caps", "vision,pdf"],
+      "env": {
+        "PLAYWRIGHT_BROWSERS_PATH": "/opt/playwright"
+      },
+      "disabled": false
     },
     "hubspot": {
       "command": "npx",
@@ -41,8 +38,7 @@
       "env": {
         "HUBSPOT_ACCESS_TOKEN": "${HUBSPOT_ACCESS_TOKEN}"
       },
-      "disabled": true,
-      "comment": "HubSpot CRM - Enable by setting HUBSPOT_ACCESS_TOKEN in .env"
+      "disabled": true
     }
   }
 }

@@ -136,7 +136,7 @@ up: ## Start containers in background
 	@echo -e "  Open shell:    $(BLUE)make shell$(NC)"
 
 .PHONY: claude
-claude: ## Launch Claude Code directly
+claude: ## Launch Claude Code (ARGS="-c" to continue, ARGS="-r" to resume)
 	@if ! docker info >/dev/null 2>&1; then \
 		echo -e "$(RED)ERROR: Docker not running$(NC)"; \
 		exit 1; \
@@ -146,7 +146,7 @@ claude: ## Launch Claude Code directly
 		echo -e "$(YELLOW)Start with:$(NC) make up"; \
 		exit 1; \
 	fi
-	$(COMPOSE) exec marvin-vm claude
+	$(COMPOSE) exec marvin-vm claude $(ARGS)
 
 .PHONY: shell
 shell: ## Open bash shell in Marvin
@@ -175,7 +175,7 @@ logs: ## Follow container logs
 
 .PHONY: restart
 restart: ## Restart containers
-	@$(COMPOSE) restart
+	make down && make up
 	@echo -e "$(GREEN)✓$(NC) Restarted"
 
 # =============================================================================
@@ -259,7 +259,6 @@ purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
 		echo -e "$(YELLOW)Removing user data (preserving config)...$(NC)"; \
 		rm -rf workspace/pentest 2>/dev/null || true; \
 		rm -f workspace/data.db 2>/dev/null || true; \
-		rm -f workspace/.claude-user-prefs 2>/dev/null || true; \
 		rm -f workspace/.claude-session-log 2>/dev/null || true; \
 		echo -e "$(YELLOW)Removing Claude auth (preserving MCP config)...$(NC)"; \
 		rm -f workspace/.claude/auth.json 2>/dev/null || true; \
@@ -308,9 +307,9 @@ doctor: ## Check system health and diagnose issues
 	@if $(COMPOSE) exec -T marvin-vm test -f /root/.config/claude/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make claude to login)$(NC)"; fi
 	@# Check MCP config
 	@echo -n "MCP config: "
-	@if [ -f workspace/.claude/mcp-servers.json ]; then \
-		servers=$$(jq '.mcpServers | length' workspace/.claude/mcp-servers.json 2>/dev/null || echo 0); \
-		enabled=$$(jq '[.mcpServers | to_entries[] | select(.value.disabled != true)] | length' workspace/.claude/mcp-servers.json 2>/dev/null || echo 0); \
+	@if [ -f workspace/.mcp.json ]; then \
+		servers=$$(jq '.mcpServers | length' workspace/.mcp.json 2>/dev/null || echo 0); \
+		enabled=$$(jq '[.mcpServers | to_entries[] | select(.value.disabled != true)] | length' workspace/.mcp.json 2>/dev/null || echo 0); \
 		echo -e "$(GREEN)✓ $$enabled/$$servers servers enabled$(NC)"; \
 	else \
 		echo -e "$(YELLOW)⚠ Missing$(NC)"; \

@@ -9,6 +9,7 @@ services:
       dockerfile: docker/Dockerfile
       args:
         INSTALL_METASPLOIT: ${INSTALL_METASPLOIT:-false}
+        ENABLE_CHROME: ${ENABLE_CHROME:-true}
       platforms:
         - linux/amd64
         - linux/arm64
@@ -27,6 +28,8 @@ services:
       - TZ=${TZ:-UTC}
       # Playwright browser path (installed to /opt during build)
       - PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
+      # Point Playwright cache to preserved location (built-time HOME=/root, runtime HOME=/workspace)
+      - XDG_CACHE_HOME=/opt/playwright-cache
 
     # Volume mounts
     volumes:

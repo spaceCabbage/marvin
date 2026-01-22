@@ -2,38 +2,29 @@
 
 ## Quick Start
 
-After `make setup`, Marvin works immediately with **10 MCP servers** enabled.
+After `make setup`, Marvin works immediately with **5 MCP servers** enabled.
 No API keys required. No configuration needed.
 
 ## MCP Servers
 
-### Enabled by Default (10 servers)
+### Enabled by Default (5 servers)
 
 | Server              | What It Does                                |
 |---------------------|---------------------------------------------|
-| filesystem          | Read/write files in ~ (home directory)      |
-| git                 | Git operations (commit, diff, branch, log)  |
-| docker              | Manage containers via Docker socket         |
 | memory              | Persistent knowledge graph between sessions |
-| fetch               | Fetch web pages and content                 |
-| time                | Get current time, convert timezones         |
 | sequential-thinking | Break down complex problems step-by-step    |
 | sqlite              | Local database at ~/data.db                 |
 | context7            | Look up library/framework documentation     |
 | playwright          | Browser automation (headless Chromium)      |
 
-**Note**: Claude also has built-in WebSearch - no MCP server needed for web searches.
+**Built-in Claude Code tools (no MCP needed):**
+- Read/Write/Edit - File operations
+- WebFetch/WebSearch - Web content and search
+- Bash - Git CLI, system commands
 
 ### Optional
 
-#### GitHub MCP Server
-
-Access GitHub repos, issues, PRs programmatically.
-
-**Setup:**
-1. Create a Personal Access Token at https://github.com/settings/tokens
-2. Add to `.env`: `GITHUB_TOKEN=ghp_your_token_here`
-3. Run: `make restart`
+HubSpot MCP server can be enabled for CRM integration. See [MCP-SERVERS.md](MCP-SERVERS.md) for details.
 
 ## Environment Variables
 
@@ -52,12 +43,12 @@ Access GitHub repos, issues, PRs programmatically.
 
 ### API Keys
 
-| Variable         | Required For | Where to Get                       |
-|------------------|--------------|------------------------------------|
-| `GITHUB_TOKEN`   | GitHub MCP   | https://github.com/settings/tokens |
-| `SHODAN_API_KEY` | Shodan OSINT | https://account.shodan.io/         |
-| `CENSYS_API_ID`  | Censys OSINT | https://search.censys.io/account   |
-| `BRAVE_API_KEY`  | Brave Search | https://brave.com/search/api/      |
+| Variable               | Required For | Where to Get                             |
+|------------------------|--------------|------------------------------------------|
+| `HUBSPOT_ACCESS_TOKEN` | HubSpot CRM  | https://developers.hubspot.com/docs/api/ |
+| `SHODAN_API_KEY`       | Shodan OSINT | https://account.shodan.io/               |
+| `CENSYS_API_ID`        | Censys OSINT | https://search.censys.io/account         |
+| `BRAVE_API_KEY`        | Brave Search | https://brave.com/search/api/            |
 
 ### Resources
 
@@ -77,10 +68,10 @@ Claude can manage `.env` for you! When you need to enable a feature or add an AP
 
 ## What Claude Needs From You
 
-**For full functionality**: Nothing! 10 MCP servers work immediately.
+**For full functionality**: Nothing! 5 MCP servers work immediately.
 
 **Optional enhancements**:
-- GitHub token → if you want GitHub API integration
+- HubSpot token → if you want CRM integration
 - OSINT API keys → if you want Shodan/Censys integration
 
 **Authentication**: Claude uses OAuth (your Claude Pro/Max subscription).

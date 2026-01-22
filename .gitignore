@@ -3,21 +3,19 @@
 
 # Ignore workspace contents (user data)
 workspace/*
+workspace/.claude/*
 
 # Keep essential config files
 !workspace/CLAUDE.md
 !workspace/.bashrc
-
+!workspace/.mcp.json
 # Keep .claude directory structure
 !workspace/.claude/
-workspace/.claude/*
-
 # Keep specific .claude contents
 !workspace/.claude/skills/
 !workspace/.claude/skills/**
 !workspace/.claude/templates/
 !workspace/.claude/templates/**
-!workspace/.claude/mcp-servers.json
 !workspace/.claude/settings.json
 !workspace/.claude/statusline.sh
 

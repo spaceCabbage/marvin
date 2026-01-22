@@ -51,7 +51,7 @@ REQUIRED_FILES=(
     "scripts/entrypoint.sh"
     "scripts/init-mcp.sh"
     "workspace/.claude/settings.json"
-    "workspace/.claude/mcp-servers.json"
+    "workspace/.mcp.json"
 )
 
 for file in "${REQUIRED_FILES[@]}"; do
