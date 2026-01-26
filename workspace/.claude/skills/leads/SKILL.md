@@ -34,7 +34,7 @@ We're efficiency consultants who happen to build software, not developers waitin
 
 | Criteria      | Target                                            |
 |---------------|---------------------------------------------------|
-| **Size**      | 15-50 employees                                   |
+| **Size**      | 15-100 employees                                  |
 | **Geography** | USA only                                          |
 | **Bonus**     | Tristate area (NY/NJ/CT), Jewish-owned businesses |
 
@@ -149,7 +149,7 @@ Focus: **Office-based operations that overuse spreadsheets, copy-paste workflows
 | Category                 | Max Points | How Scored                                            |
 |--------------------------|------------|-------------------------------------------------------|
 | Industry Fit             | 15         | High = 15, Medium = 10, Low = 5                       |
-| Company Size             | 10         | Ideal (30-80) = 10, Acceptable = 7, Edge = 3          |
+| Company Size             | 10         | Ideal (15-100) = 10, Acceptable = 7, Edge = 3         |
 | Tech Stack Fragmentation | 25         | Multiple disconnected systems detected                |
 | Pain: Manual Processes   | 20         | Spreadsheets, data entry, no automation               |
 | Pain: High Labor Costs   | 15         | Job posts/reviews indicating admin bloat              |
@@ -171,7 +171,7 @@ Focus: **Office-based operations that overuse spreadsheets, copy-paste workflows
 
 ## Phase 0: Engagement Setup (ALWAYS DO FIRST)
 
-When the skill is triggered (e.g., `/lead-qual` or "research company X"):
+When the skill is triggered (e.g., `/leads` or "research company X"):
 
 ### Step 1: Gather Initial Info (Use AskUserQuestion)
 
@@ -714,6 +714,71 @@ For deep company research, can leverage OSINT patterns:
 - Anyone "coordinator" level
 
 **Why this matters:** Our efficiency gains save the COMPANY money. The only people who care are those whose compensation or equity is tied to company profitability. HR doesn't get a bonus for cutting headcount.
+
+---
+
+## Email Verification (CRITICAL)
+
+**A lead without a verified email for the attack person is not a quality lead.**
+
+### Rules
+
+1. **Only use VERIFIED emails** - emails we can confirm actually exist via OSINT tools
+2. **NEVER use guessed patterns** like `firstname@domain.com`, `first.last@domain.com`, `f.lastname@domain.com`
+3. If we can't verify the email, mark the contact as **"email unverified"**
+4. Unverified emails should NOT be used for outreach - they hurt deliverability and look unprofessional
+
+### Verification Methods
+
+**Use these tools to verify emails exist:**
+
+```bash
+# Check if email is registered on various services (proves it exists)
+holehe target@company.com
+
+# Check breach databases (if email appears in breaches, it exists)
+h8mail -t target@company.com
+
+# Find actual email patterns from public sources
+theHarvester -d company.com -b all
+
+# Check social platforms
+socialscan target@company.com
+```
+
+### Confidence Levels
+
+| Level               | Criteria                                                                  | Action             |
+|---------------------|---------------------------------------------------------------------------|--------------------|
+| **Verified**        | Found in breach DB, registered on services, or scraped from public source | ✅ Use for outreach |
+| **High Confidence** | Pattern matches multiple verified emails at same domain                   | ✅ Use with caution |
+| **Guessed**         | Pattern-based guess (firstname@domain.com) with no verification           | ❌ Do NOT use       |
+
+### In the Dossier
+
+Always indicate email verification status:
+
+```
+**Attack Person:** John Smith, COO
+- LinkedIn: linkedin.com/in/johnsmith
+- Email: john.smith@acme.com ✅ (verified via holehe - registered on LinkedIn, Slack)
+```
+
+Or if unverified:
+
+```
+**Attack Person:** John Smith, COO
+- LinkedIn: linkedin.com/in/johnsmith
+- Email: ❌ Not verified (pattern guess only - do not use)
+- **Recommended:** Connect on LinkedIn first
+```
+
+### Why This Matters
+
+- Guessed emails bounce → hurts sender reputation
+- Wrong person receives email → looks unprofessional
+- Cold email to unverified address → likely spam filtered
+- LinkedIn connection request is better than guessed email
 
 ---
 

@@ -103,7 +103,7 @@ setup: ## First-time setup: generate .env, build, start, authenticate
 	@echo -e "$(GREEN)║         Setup Complete!              ║$(NC)"
 	@echo -e "$(GREEN)╚══════════════════════════════════════╝$(NC)"
 	@echo ""
-	@echo -e "  Run: $(BLUE)make claude$(NC) to start using Marvin"
+	@echo -e "  Run: $(BLUE)make marvin$(NC) to start using Marvin"
 	@echo ""
 
 .PHONY: build
@@ -132,11 +132,11 @@ build-clean: ## Build Docker image without cache (fresh build)
 up: ## Start containers in background
 	@$(COMPOSE) up -d
 	@echo -e "$(GREEN)✓$(NC) Marvin running"
-	@echo -e "  Launch Claude: $(BLUE)make claude$(NC)"
+	@echo -e "  Launch Claude: $(BLUE)make marvin$(NC)"
 	@echo -e "  Open shell:    $(BLUE)make shell$(NC)"
 
-.PHONY: claude
-claude: ## Launch Claude Code (ARGS="-c" to continue, ARGS="-r" to resume)
+.PHONY: marvin
+marvin: ## Launch Claude Code (pass any args: make marvin ARGS="-c")
 	@if ! docker info >/dev/null 2>&1; then \
 		echo -e "$(RED)ERROR: Docker not running$(NC)"; \
 		exit 1; \
@@ -197,6 +197,24 @@ login: ## Re-authenticate Claude Code (if needed)
 .PHONY: status
 status: ## Show container status
 	@$(COMPOSE) ps
+
+.PHONY: install
+install: ## Install 'marvin' command globally (~/.local/bin)
+	@mkdir -p ~/.local/bin
+	@chmod +x "$(CURDIR)/scripts/marvin"
+	@ln -sf "$(CURDIR)/scripts/marvin" ~/.local/bin/marvin
+	@echo -e "$(GREEN)✓$(NC) Installed 'marvin' to ~/.local/bin/"
+	@if echo "$$PATH" | grep -q "$$HOME/.local/bin"; then \
+		echo -e "  You can now run $(BLUE)marvin$(NC) from anywhere"; \
+	else \
+		echo -e "  $(YELLOW)Add ~/.local/bin to your PATH:$(NC)"; \
+		echo -e "    echo 'export PATH=\"\$$HOME/.local/bin:\$$PATH\"' >> ~/.bashrc"; \
+	fi
+
+.PHONY: uninstall
+uninstall: ## Remove 'marvin' command from ~/.local/bin
+	@rm -f ~/.local/bin/marvin
+	@echo -e "$(GREEN)✓$(NC) Removed 'marvin' from ~/.local/bin/"
 
 # =============================================================================
 # VPS Deployment

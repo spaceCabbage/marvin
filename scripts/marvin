@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Marvin - Launch Claude Code in the Marvin container
+# Run from anywhere, auto-starts stack if needed
+
+# Resolve the actual script location (follows symlinks)
+SCRIPT_PATH="$(readlink -f "$0")"
+MARVIN_DIR="$(dirname "$SCRIPT_PATH")/.."
+
+cd "$MARVIN_DIR" || { echo "Error: Marvin directory not found"; exit 1; }
+
+# Check if container is running, start if not
+if ! make status 2>/dev/null | grep -q "marvin-vm.*Up"; then
+    echo "Starting Marvin..."
+    make up
+fi
+
+# Launch Claude with any passed arguments
+exec make marvin ARGS="$*"
