@@ -218,6 +218,50 @@ vps-up: ## Start on VPS with domain (Caddy/HTTPS)
 	@echo -e "$(GREEN)✓$(NC) Marvin running (VPS mode)"
 
 # =============================================================================
+# Telegram Bot
+# =============================================================================
+
+# Compose command that includes the telegram bot overlay
+COMPOSE_BOT := docker compose -f docker/docker-compose.yml -f docker/docker-compose.telegram.yml
+
+.PHONY: bot-build
+bot-build: ## Build the Telegram bot image
+	@echo -e "$(BLUE)Building Telegram bot...$(NC)"
+	docker build -t marvin-telegram:latest telegram-bot/
+	@echo -e "$(GREEN)✓$(NC) Bot image built"
+
+.PHONY: bot-up
+bot-up: ## Start the Telegram bot (requires TELEGRAM_BOT_TOKEN in .env)
+	@if [ -z "$(TELEGRAM_BOT_TOKEN)" ]; then \
+		echo -e "$(RED)ERROR: TELEGRAM_BOT_TOKEN not set in .env$(NC)"; \
+		echo -e "$(YELLOW)Get a token from @BotFather on Telegram, then add to .env$(NC)"; \
+		exit 1; \
+	fi
+	@if ! $(COMPOSE) ps 2>/dev/null | grep -q "marvin-vm.*Up"; then \
+		echo -e "$(YELLOW)Marvin container not running. Starting it first...$(NC)"; \
+		$(COMPOSE) up -d; \
+	fi
+	@echo -e "$(BLUE)Starting Telegram bot...$(NC)"
+	$(COMPOSE_BOT) up -d marvin-telegram
+	@echo -e "$(GREEN)✓$(NC) Telegram bot running"
+	@echo -e "  Logs: $(BLUE)make bot-logs$(NC)"
+
+.PHONY: bot-down
+bot-down: ## Stop the Telegram bot
+	@$(COMPOSE_BOT) stop marvin-telegram
+	@$(COMPOSE_BOT) rm -f marvin-telegram
+	@echo -e "$(GREEN)✓$(NC) Telegram bot stopped"
+
+.PHONY: bot-logs
+bot-logs: ## Follow Telegram bot logs
+	@$(COMPOSE_BOT) logs -f marvin-telegram
+
+.PHONY: bot-restart
+bot-restart: ## Restart the Telegram bot
+	@$(COMPOSE_BOT) restart marvin-telegram
+	@echo -e "$(GREEN)✓$(NC) Bot restarted"
+
+# =============================================================================
 # Cleanup
 # =============================================================================
 
@@ -229,7 +273,8 @@ clean: ## Remove containers and volumes
 .PHONY: clean-all
 clean-all: clean ## Remove everything including images
 	@docker rmi marvin:latest 2>/dev/null || true
-	@echo -e "$(GREEN)✓$(NC) Removed Marvin image"
+	@docker rmi marvin-telegram:latest 2>/dev/null || true
+	@echo -e "$(GREEN)✓$(NC) Removed Marvin images"
 
 .PHONY: purge
 purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
@@ -314,6 +359,15 @@ doctor: ## Check system health and diagnose issues
 		echo -e "$(GREEN)✓ $$enabled/$$servers servers enabled$(NC)"; \
 	else \
 		echo -e "$(YELLOW)⚠ Missing$(NC)"; \
+	fi
+	@# Check Telegram bot
+	@echo -n "Telegram bot: "
+	@if docker ps --format "{{.Names}}" 2>/dev/null | grep -q "marvin-telegram"; then \
+		echo -e "$(GREEN)✓ Running$(NC)"; \
+	elif [ -n "$(TELEGRAM_BOT_TOKEN)" ]; then \
+		echo -e "$(YELLOW)⚠ Not running (run make bot-up)$(NC)"; \
+	else \
+		echo -e "$(YELLOW)- Not configured (set TELEGRAM_BOT_TOKEN in .env)$(NC)"; \
 	fi
 	@echo ""
 	@echo -e "$(BLUE)Diagnostics complete$(NC)"
