@@ -18,6 +18,8 @@ workspace/.claude/*
 !workspace/.claude/templates/**
 !workspace/.claude/settings.json
 !workspace/.claude/statusline.sh
+!workspace/.claude/telegram-mcp/
+!workspace/.claude/telegram-mcp/**
 
 # Caddy data
 config/caddy/data/

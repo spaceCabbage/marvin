@@ -16,13 +16,19 @@ services:
       - TELEGRAM_ALLOWED_USERS=${TELEGRAM_ALLOWED_USERS:-}
       - MARVIN_CONTAINER=marvin-vm
       - WORKSPACE_PATH=/workspace
+      - MCP_API_PORT=8443
 
     volumes:
       # Docker socket for docker exec into marvin-vm
       - /var/run/docker.sock:/var/run/docker.sock:rw
 
-      # Shared workspace for file access (read-only for the bot)
+      # Shared workspace for file access
       - ../workspace:/workspace:rw
+
+    # Internal API port for MCP server communication (not exposed to host)
+    # The MCP server inside marvin-vm reaches this at http://marvin-telegram:8443
+    expose:
+      - "8443"
 
     # Minimal resources - the bot is lightweight
     deploy:
