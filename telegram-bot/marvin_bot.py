@@ -9,12 +9,15 @@ Architecture:
 - Runs as a separate container alongside marvin-vm
 - Uses `docker exec` to invoke `claude -p` inside the Marvin container
 - Shares the workspace volume for file access
-- Streams output and provides real-time status updates
+- Exposes an internal HTTP API (port 8443) for the Telegram MCP server
+  running inside the Marvin container, enabling Claude to ask the user
+  questions mid-execution and send files directly
 
 Features:
 - Full Claude Code session management (new, resume, continue)
 - Rich media handling (photos, documents, voice, location, contacts)
 - Streaming output with live progress updates
+- MCP bridge: Claude can call telegram_ask / telegram_send_file mid-task
 - File browsing and sending from engagements
 - Auto-detection of new output files after operations
 - Authorization control via Telegram user IDs
@@ -31,9 +34,11 @@ from datetime import datetime
 from typing import Optional
 from dataclasses import dataclass, field
 
+from aiohttp import web
 from telegram import (
     Update,
     BotCommand,
+    ForceReply,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     InputFile,
@@ -56,11 +61,12 @@ from telegram.constants import ParseMode, ChatAction
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 MARVIN_CONTAINER = os.environ.get("MARVIN_CONTAINER", "marvin-vm")
 WORKSPACE_PATH = os.environ.get("WORKSPACE_PATH", "/workspace")
+MCP_API_PORT = int(os.environ.get("MCP_API_PORT", "8443"))
 MAX_MSG_LEN = 4096
-UPDATE_INTERVAL = 3.0      # seconds between Telegram message edits
-TYPING_INTERVAL = 4.0      # seconds between typing indicators
-CLAUDE_TIMEOUT = 3600       # 60 minutes max per operation
-MAX_FILE_BUTTONS = 20       # max inline buttons for file listings
+UPDATE_INTERVAL = 3.0
+TYPING_INTERVAL = 4.0
+MAX_FILE_BUTTONS = 20
+ASK_TIMEOUT = 300           # 5 minutes to answer a question
 
 # Parse allowed Telegram user IDs
 ALLOWED_USERS: set[int] = set()
@@ -93,9 +99,21 @@ class Session:
 # chat_id -> Session
 sessions: dict[int, Session] = {}
 
-# file path registry for callback buttons (callback_data has 64 byte limit)
+# File path registry for callback buttons (callback_data has 64 byte limit)
 file_registry: dict[str, str] = {}
 _file_counter = 0
+
+# MCP pending question state
+# When Claude calls telegram_ask via the MCP server, the question is stored
+# here. The next user message or inline button press resolves the future.
+pending_question: Optional[dict] = None   # {"future", "chat_id", "question"}
+mcp_choices: list[str] = []               # choices for current pending question
+
+# Active chat ID for the MCP API (which chat to send messages to)
+active_chat_id: Optional[int] = None
+
+# Global bot reference (set during startup for the HTTP API handlers)
+bot_app: Optional[Application] = None
 
 
 def get_session(chat_id: int) -> Session:
@@ -157,10 +175,8 @@ def split_message(text: str, max_len: int = MAX_MSG_LEN) -> list[str]:
         if len(text) <= max_len:
             parts.append(text)
             break
-        # Try to find a newline to split at
         idx = text.rfind("\n", 0, max_len)
         if idx < max_len // 4:
-            # No good split point, try space
             idx = text.rfind(" ", 0, max_len)
         if idx < max_len // 4:
             idx = max_len
@@ -170,30 +186,36 @@ def split_message(text: str, max_len: int = MAX_MSG_LEN) -> list[str]:
 
 
 def format_for_telegram(text: str) -> str:
-    """
-    Convert Claude's markdown output to Telegram-safe HTML.
-    Falls back gracefully if conversion is imperfect.
-    """
-    # Escape HTML entities
+    """Convert Claude's markdown to Telegram-safe HTML."""
     text = text.replace("&", "&amp;")
     text = text.replace("<", "&lt;")
     text = text.replace(">", "&gt;")
 
-    # Convert fenced code blocks: ```lang\n...\n``` -> <pre>...</pre>
+    # Fenced code blocks -> <pre>
     text = re.sub(
         r"```(?:\w*)\n(.*?)```",
         lambda m: f"<pre>{m.group(1)}</pre>",
         text,
         flags=re.DOTALL,
     )
-
-    # Convert inline code: `...` -> <code>...</code>
+    # Inline code -> <code>
     text = re.sub(r"`([^`\n]+)`", r"<code>\1</code>", text)
-
-    # Convert bold: **text** -> <b>text</b>
+    # Bold
     text = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", text, flags=re.DOTALL)
 
     return text
+
+
+async def send_telegram(chat_id: int, text: str, bot, **kwargs):
+    """Send a message with HTML, falling back to plain text."""
+    formatted = format_for_telegram(text)
+    try:
+        return await bot.send_message(
+            chat_id=chat_id, text=formatted,
+            parse_mode=ParseMode.HTML, **kwargs,
+        )
+    except Exception:
+        return await bot.send_message(chat_id=chat_id, text=text, **kwargs)
 
 
 # =============================================================================
@@ -209,7 +231,6 @@ async def run_claude(
 ) -> tuple[str, Optional[str], list[str]]:
     """
     Run `claude -p` inside the Marvin container with streaming JSON output.
-
     Returns (result_text, session_id, tools_used).
     """
     cmd = [
@@ -264,7 +285,6 @@ async def run_claude(
 
             now = time.time()
 
-            # Keep typing indicator alive
             if now - last_typing_time > TYPING_INTERVAL:
                 try:
                     await bot.send_chat_action(chat_id, ChatAction.TYPING)
@@ -272,7 +292,6 @@ async def run_claude(
                     pass
                 last_typing_time = now
 
-            # Parse JSON event
             try:
                 event = json.loads(line)
             except json.JSONDecodeError:
@@ -292,7 +311,6 @@ async def run_claude(
                             tool_name = block.get("name", "unknown")
                             tools_used.append(tool_name)
 
-                # Update status message with tool progress
                 if tools_used and now - last_update_time > UPDATE_INTERVAL:
                     last_update_time = now
                     recent = tools_used[-1]
@@ -337,11 +355,135 @@ async def run_claude(
         session.is_running = False
         session.current_proc = None
 
-    # Use accumulated text if no explicit result
     if not result_text and accumulated_text:
         result_text = accumulated_text
 
     return result_text, new_session_id, tools_used
+
+
+# =============================================================================
+# MCP Internal HTTP API
+# =============================================================================
+# These endpoints are called by the Telegram MCP server running inside the
+# Marvin container. They enable Claude to interact with the Telegram user
+# mid-execution (ask questions, send messages, send files).
+
+async def api_health(request: web.Request) -> web.Response:
+    """Health check endpoint."""
+    return web.json_response({
+        "status": "ok",
+        "active_chat": active_chat_id,
+        "has_pending_question": pending_question is not None,
+    })
+
+
+async def api_ask(request: web.Request) -> web.Response:
+    """
+    Ask the Telegram user a question and wait for their response.
+    Called by the MCP server's telegram_ask tool.
+    """
+    global pending_question, mcp_choices
+
+    if not active_chat_id:
+        return web.json_response(
+            {"status": "error", "response": "No active Telegram chat."},
+            status=400,
+        )
+
+    data = await request.json()
+    question = data.get("question", "")
+    choices = data.get("choices", [])
+    chat_id = active_chat_id
+    bot = bot_app.bot
+
+    # Create a future the message handler will resolve
+    loop = asyncio.get_event_loop()
+    future = loop.create_future()
+    pending_question = {
+        "future": future,
+        "chat_id": chat_id,
+        "question": question,
+    }
+
+    # Send the question to Telegram with appropriate UI
+    if choices:
+        mcp_choices = list(choices)
+        buttons = []
+        for i, choice in enumerate(choices):
+            # Truncate label if needed, callback_data max 64 bytes
+            label = choice[:60]
+            buttons.append(
+                [InlineKeyboardButton(label, callback_data=f"mcp:{i}")]
+            )
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f"<b>Question from Claude:</b>\n{question}",
+            reply_markup=InlineKeyboardMarkup(buttons),
+            parse_mode=ParseMode.HTML,
+        )
+    else:
+        # Use ForceReply to auto-open the reply keyboard
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f"<b>Question from Claude:</b>\n{question}",
+            reply_markup=ForceReply(selective=False, input_field_placeholder="Your answer..."),
+            parse_mode=ParseMode.HTML,
+        )
+
+    log.info(f"MCP ask: '{question}' with {len(choices)} choices")
+
+    # Block until the user responds or timeout
+    try:
+        response = await asyncio.wait_for(future, timeout=ASK_TIMEOUT)
+        return web.json_response({"status": "ok", "response": response})
+    except asyncio.TimeoutError:
+        pending_question = None
+        mcp_choices.clear()
+        return web.json_response({
+            "status": "timeout",
+            "response": f"User did not respond within {ASK_TIMEOUT // 60} minutes.",
+        })
+
+
+async def api_send_message(request: web.Request) -> web.Response:
+    """
+    Send a message to the Telegram user (non-blocking).
+    Called by the MCP server's telegram_send_message tool.
+    """
+    if not active_chat_id:
+        return web.json_response({"status": "error"}, status=400)
+
+    data = await request.json()
+    text = data.get("text", "")
+    bot = bot_app.bot
+
+    await send_telegram(active_chat_id, text, bot)
+    log.info(f"MCP send_message to chat {active_chat_id}")
+    return web.json_response({"status": "ok"})
+
+
+async def api_send_file(request: web.Request) -> web.Response:
+    """
+    Send a file to the Telegram user.
+    Called by the MCP server's telegram_send_file tool.
+    """
+    if not active_chat_id:
+        return web.json_response({"status": "error"}, status=400)
+
+    data = await request.json()
+    filepath = data.get("path", "")
+    caption = data.get("caption", "")
+    bot = bot_app.bot
+
+    path = Path(filepath)
+    if not path.exists() or not path.is_file():
+        return web.json_response(
+            {"status": "error", "message": f"File not found: {filepath}"},
+            status=404,
+        )
+
+    await send_file(active_chat_id, path, bot, caption=caption)
+    return web.json_response({"status": "ok"})
 
 
 # =============================================================================
@@ -368,8 +510,11 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"/id - Show your Telegram user ID\n"
         f"/help - Show this help\n\n"
         f"<b>Rich Input:</b>\n"
-        f"Send photos, documents, voice messages, locations, "
-        f"or contacts - they'll all be forwarded to Claude.",
+        f"Photos, documents, voice, video, location, contacts "
+        f"are all forwarded to Claude.\n\n"
+        f"<b>MCP Bridge:</b>\n"
+        f"Claude can ask you questions mid-task and send files "
+        f"directly through the telegram MCP server.",
         parse_mode=ParseMode.HTML,
     )
 
@@ -401,7 +546,6 @@ async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     session = get_session(chat_id)
 
-    # Check container status
     proc = await asyncio.create_subprocess_exec(
         "docker", "inspect", "--format",
         "{{.State.Status}}|{{.State.Health.Status}}",
@@ -468,7 +612,6 @@ async def cmd_files(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("No engagements yet.")
         return
 
-    # Collect report files first, then all files as fallback
     report_files = []
     for f in eng_path.rglob("report/*"):
         if f.is_file() and f.suffix in (".pdf", ".md", ".txt", ".html"):
@@ -538,6 +681,7 @@ async def cmd_send(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @authorized
 async def cmd_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Cancel the currently running operation."""
+    global pending_question
     chat_id = update.effective_chat.id
     session = get_session(chat_id)
 
@@ -549,13 +693,18 @@ async def cmd_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         session.current_proc.kill()
         session.is_running = False
         session.current_proc = None
+        # Also clear any pending MCP question
+        if pending_question and not pending_question["future"].done():
+            pending_question["future"].set_result("[Cancelled by user]")
+        pending_question = None
+        mcp_choices.clear()
         await update.message.reply_text("Operation cancelled.")
     except Exception as e:
         await update.message.reply_text(f"Error cancelling: {e}")
 
 
 async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Show the user's Telegram ID (no auth required for this one)."""
+    """Show the user's Telegram ID (no auth required)."""
     user = update.effective_user
     await update.message.reply_text(
         f"Your Telegram user ID: <code>{user.id}</code>\n"
@@ -566,7 +715,7 @@ async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @authorized
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Show help (same as /start)."""
+    """Show help."""
     await cmd_start(update, context)
 
 
@@ -575,11 +724,34 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # =============================================================================
 
 async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle inline keyboard button presses (file downloads)."""
+    """Handle inline keyboard button presses."""
+    global pending_question
     query = update.callback_query
-    await query.answer()
-
     data = query.data
+
+    # MCP choice button (from telegram_ask with choices)
+    if data.startswith("mcp:"):
+        await query.answer()
+        if pending_question and not pending_question["future"].done():
+            idx = int(data.split(":")[1])
+            choice = mcp_choices[idx] if idx < len(mcp_choices) else f"Option {idx + 1}"
+            pending_question["future"].set_result(choice)
+            pending_question = None
+            mcp_choices.clear()
+            # Update the message to show the selected choice
+            try:
+                await query.message.edit_text(
+                    f"{query.message.text}\n\n<i>You selected: {choice}</i>",
+                    parse_mode=ParseMode.HTML,
+                )
+            except Exception:
+                pass
+        else:
+            await query.message.reply_text("This question has already been answered.")
+        return
+
+    # File download button
+    await query.answer()
     if data in file_registry:
         filepath = file_registry[data]
         path = Path(filepath)
@@ -589,23 +761,23 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.message.reply_text(f"File no longer exists: {path.name}")
 
 
-async def send_file(chat_id: int, path: Path, bot):
+async def send_file(chat_id: int, path: Path, bot, caption: str = ""):
     """Send a file via Telegram."""
     try:
         file_size = path.stat().st_size
         if file_size > 50 * 1024 * 1024:
             await bot.send_message(
                 chat_id,
-                f"File too large ({file_size // 1024 // 1024}MB). "
-                f"Telegram limit is 50MB.",
+                f"File too large ({file_size // 1024 // 1024}MB). Telegram limit is 50MB.",
             )
             return
 
+        cap = caption or f"{path.name} ({file_size // 1024}KB)"
         with open(path, "rb") as f:
             await bot.send_document(
                 chat_id=chat_id,
                 document=InputFile(f, filename=path.name),
-                caption=f"{path.name} ({file_size // 1024}KB)",
+                caption=cap,
             )
         log.info(f"Sent file: {path.name} to chat {chat_id}")
     except Exception as e:
@@ -619,10 +791,20 @@ async def send_file(chat_id: int, path: Path, bot):
 
 @authorized
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle plain text messages - relay to Claude."""
+    """Handle plain text messages."""
+    global pending_question
     chat_id = update.effective_chat.id
-    session = get_session(chat_id)
 
+    # If there's a pending MCP question, this message is the answer
+    if pending_question and pending_question.get("chat_id") == chat_id:
+        future = pending_question["future"]
+        if not future.done():
+            future.set_result(update.message.text)
+        pending_question = None
+        mcp_choices.clear()
+        return
+
+    session = get_session(chat_id)
     if session.is_running:
         await update.message.reply_text(
             "Still processing the previous message. Wait or /cancel."
@@ -634,7 +816,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @authorized
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle photos - download, save, and tell Claude about them."""
+    """Handle photos."""
     chat_id = update.effective_chat.id
     session = get_session(chat_id)
 
@@ -642,7 +824,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Still processing. Wait or /cancel.")
         return
 
-    photo = update.message.photo[-1]  # highest resolution
+    photo = update.message.photo[-1]
     tg_file = await photo.get_file()
 
     uploads_dir = Path(WORKSPACE_PATH) / "uploads"
@@ -667,7 +849,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @authorized
 async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle documents - download, save, and tell Claude about them."""
+    """Handle documents."""
     chat_id = update.effective_chat.id
     session = get_session(chat_id)
 
@@ -704,7 +886,7 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @authorized
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle voice messages - download, save, and tell Claude."""
+    """Handle voice messages."""
     chat_id = update.effective_chat.id
     session = get_session(chat_id)
 
@@ -776,10 +958,7 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if contact.user_id:
         parts.append(f"Telegram ID: {contact.user_id}")
 
-    message = (
-        f"The user shared a contact via Telegram:\n"
-        + "\n".join(parts)
-    )
+    message = "The user shared a contact via Telegram:\n" + "\n".join(parts)
 
     await process_message(chat_id, message, session, context.bot)
 
@@ -829,26 +1008,21 @@ async def process_message(
     session: Session,
     bot,
 ):
-    """
-    Process a user message through Claude and send back the response.
-    Handles streaming updates, file detection, and error recovery.
-    """
+    """Process a user message through Claude and send back the response."""
+    global active_chat_id
+    active_chat_id = chat_id
+
     session.last_active = datetime.now()
     session.message_count += 1
-
-    # Snapshot workspace files before running Claude
     session.files_before = scan_workspace_files()
 
-    # Send initial status message
     status_msg = await bot.send_message(chat_id=chat_id, text="Processing...")
 
-    # Send typing indicator
     try:
         await bot.send_chat_action(chat_id, ChatAction.TYPING)
     except Exception:
         pass
 
-    # Run Claude
     result_text, new_session_id, tools_used = await run_claude(
         message=message,
         session=session,
@@ -857,17 +1031,14 @@ async def process_message(
         status_msg_id=status_msg.message_id,
     )
 
-    # Update session
     if new_session_id:
         session.session_id = new_session_id
 
-    # Delete the status message
     try:
         await bot.delete_message(chat_id, status_msg.message_id)
     except Exception:
         pass
 
-    # Send result
     if not result_text:
         result_text = "No response from Claude."
 
@@ -881,25 +1052,22 @@ async def process_message(
                 parse_mode=ParseMode.HTML,
             )
         except Exception:
-            # HTML parsing failed, send as plain text
             try:
                 await bot.send_message(chat_id=chat_id, text=part)
             except Exception as e:
                 log.error(f"Failed to send message part: {e}")
 
-    # Check for new files created during this operation
+    # Detect new files created during this operation
     files_after = scan_workspace_files()
     new_files = files_after - session.files_before
 
     if new_files:
-        # Filter to deliverable/interesting file types
         interesting_exts = {
             ".pdf", ".md", ".txt", ".html", ".csv", ".json",
             ".png", ".jpg", ".xml", ".xlsx",
         }
         report_files = [
-            f for f in new_files
-            if Path(f).suffix in interesting_exts
+            f for f in new_files if Path(f).suffix in interesting_exts
         ]
 
         if report_files:
@@ -929,7 +1097,7 @@ async def process_message(
 
 
 # =============================================================================
-# Bot Setup
+# Bot Setup & Main
 # =============================================================================
 
 async def post_init(app: Application):
@@ -948,11 +1116,14 @@ async def post_init(app: Application):
     log.info("Bot commands registered with Telegram")
 
 
-def main():
-    """Entry point."""
+async def main():
+    """Start both the Telegram bot and the MCP HTTP API."""
+    global bot_app
+
     log.info("Starting Marvin Telegram Bot...")
     log.info(f"Container target: {MARVIN_CONTAINER}")
     log.info(f"Workspace path: {WORKSPACE_PATH}")
+    log.info(f"MCP API port: {MCP_API_PORT}")
     if ALLOWED_USERS:
         log.info(f"Allowed users: {ALLOWED_USERS}")
     else:
@@ -961,12 +1132,14 @@ def main():
             "Set this in .env for security."
         )
 
+    # Build the Telegram application
     app = (
         Application.builder()
         .token(TELEGRAM_BOT_TOKEN)
         .post_init(post_init)
         .build()
     )
+    bot_app = app
 
     # Command handlers
     app.add_handler(CommandHandler("start", cmd_start))
@@ -982,7 +1155,7 @@ def main():
     # Callback handler for inline buttons
     app.add_handler(CallbackQueryHandler(callback_handler))
 
-    # Message handlers for rich input types
+    # Message handlers
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
@@ -991,10 +1164,37 @@ def main():
     app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
 
-    # Start polling
-    log.info("Bot is live. Polling for updates...")
-    app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
+    # Build the MCP HTTP API server
+    web_app = web.Application()
+    web_app.router.add_get("/api/health", api_health)
+    web_app.router.add_post("/api/ask", api_ask)
+    web_app.router.add_post("/api/send", api_send_message)
+    web_app.router.add_post("/api/file", api_send_file)
+
+    runner = web.AppRunner(web_app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", MCP_API_PORT)
+
+    # Start everything
+    async with app:
+        await app.start()
+        await app.updater.start_polling(
+            allowed_updates=Update.ALL_TYPES,
+            drop_pending_updates=True,
+        )
+        await site.start()
+        log.info(f"MCP HTTP API listening on port {MCP_API_PORT}")
+        log.info("Bot is live. Polling for updates...")
+
+        # Run forever
+        try:
+            await asyncio.Event().wait()
+        finally:
+            log.info("Shutting down...")
+            await app.updater.stop()
+            await app.stop()
+            await runner.cleanup()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
