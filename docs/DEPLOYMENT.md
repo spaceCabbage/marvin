@@ -362,7 +362,7 @@ free -h
 
 ### Custom MCP Servers
 
-Edit `workspace/.claude/mcp-servers.json` to add/remove MCP servers:
+Edit `workspace/.mcp.json` to add/remove MCP servers:
 
 ```json
 {
@@ -470,7 +470,7 @@ docker compose exec marvin-vm claude --version
 **MCP servers not loading:**
 ```bash
 # Check MCP configuration
-cat workspace/.claude/mcp-servers.json | jq
+cat workspace/.mcp.json | jq
 
 # Test npx availability
 docker compose exec marvin-vm npx --version

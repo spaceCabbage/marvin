@@ -23,12 +23,12 @@ make logs      # View logs
 make doctor    # Check system health
 ```
 
-### 2. User Preferences
+### 2. User Preferences (Memory MCP)
 
-Tell user about `~/.claude-user-prefs`:
-- Claude remembers name, email, GitHub, preferences
+Tell user about Memory MCP:
+- Claude remembers name, email, preferences using the Memory MCP knowledge graph
 - Just tell Claude your info and it saves automatically
-- Persists across sessions
+- Persists across sessions via Memory MCP
 
 ### 3. Self-Managing Configuration
 
@@ -86,7 +86,7 @@ make down      # Stop
 ```
 
 **I Remember You:**
-Tell me your name/email/GitHub and I'll save it to `~/.claude-user-prefs`. I'll remember across sessions.
+Tell me your name/email/preferences and I'll save them to Memory MCP. I'll remember across sessions.
 
 **I Find Tools:**
 Just tell me what you want to do. I'll search for the best tools, suggest them, and install with your permission.

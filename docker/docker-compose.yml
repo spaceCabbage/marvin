@@ -9,6 +9,7 @@ services:
       dockerfile: docker/Dockerfile
       args:
         INSTALL_METASPLOIT: ${INSTALL_METASPLOIT:-false}
+        ENABLE_CHROME: ${ENABLE_CHROME:-true}
       platforms:
         - linux/amd64
         - linux/arm64
@@ -21,12 +22,14 @@ services:
     environment:
       - HOME=/workspace
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-opus-4-5-20251101}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-5-20250929}
       - WIFI_INTERFACE=${WIFI_INTERFACE:-wlan1}
       - WIFI_MONITOR_MODE=${WIFI_MONITOR_MODE:-false}
       - TZ=${TZ:-UTC}
       # Playwright browser path (installed to /opt during build)
       - PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
+      # Point Playwright cache to preserved location (built-time HOME=/root, runtime HOME=/workspace)
+      - XDG_CACHE_HOME=/opt/playwright-cache
 
     # Volume mounts
     volumes:

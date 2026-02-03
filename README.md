@@ -62,7 +62,7 @@ Start a new investigation for the same client? Claude creates a new dated folder
 
 ### How Claude Remembers You
 
-Tell Claude your name, email, or preferences once - it saves them to `~/.claude-user-prefs` and remembers across sessions.
+Tell Claude your name, email, or preferences once - it saves them to the **Memory MCP** knowledge graph and remembers across sessions.
 
 Your Claude auth, shell config, and all settings persist in the workspace, so you only need to log in once.
 

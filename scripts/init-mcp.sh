@@ -13,8 +13,9 @@ NC='\033[0m'
 echo "Initializing MCP servers..."
 
 # MCP config locations (use $HOME which is /workspace at runtime)
-MCP_CONFIG="$HOME/.claude/mcp-servers.json"
-MCP_DEFAULT="$HOME/.claude/mcp-servers.json.default"
+# Claude Code expects ~/.mcp.json for MCP server definitions
+MCP_CONFIG="$HOME/.mcp.json"
+MCP_DEFAULT="$HOME/.mcp.json.default"
 
 # Check for MCP config
 if [ -f "$MCP_CONFIG" ]; then

@@ -15,7 +15,22 @@
       "Skill",
       "WebFetch",
       "BashBackground",
-      "BashKill"
+      "BashKill",
+      "WebSearch",
+      "mcp__playwright__browser_navigate",
+      "mcp__memory__read_graph",
+      "mcp__memory__search_nodes",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_network_requests",
+      "mcp__memory__create_entities",
+      "mcp__memory__create_relations",
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__sqlite__list_tables",
+      "mcp__sqlite__create_table",
+      "mcp__sqlite__write_query",
+      "mcp__sqlite__read_query",
+      "mcp__sqlite__describe_table"
     ],
     "deny": [
       "Bash(rm -rf /)",
@@ -24,9 +39,28 @@
       "Bash(sudo shutdown)",
       "Bash(shutdown)"
     ],
-    "ask": ["Bash(git push)"],
+    "ask": ["Bash(git push)", "Bash(git stage)"],
     "defaultMode": "acceptEdits"
   },
+  "model": "sonnet",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rm -f ~/.current-engagement"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
+  "alwaysThinkingEnabled": false,
+  "promptSuggestionEnabled": false,
   "companyAnnouncements": [
     "Here I am, brain the size of a planet, and they ask me to run port scans.",
     "I think you ought to know I'm feeling very depressed.",
@@ -64,22 +98,6 @@
     "I'm not getting you down at all, am I?",
     "Ghastly, isn't it? All that effort, and here we are, just talking."
   ],
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh"
-  },
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "rm -f ~/.current-engagement"
-          }
-        ]
-      }
-    ]
-  },
   "version": 1,
   "mcp": {
     "dynamicLoading": true,

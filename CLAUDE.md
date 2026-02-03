@@ -25,8 +25,8 @@ Marvin/
 │   ├── .claude/           # Claude Code config for container
 │   │   ├── skills/        # OSINT, pentest, report-output skills
 │   │   ├── templates/     # PDF themes (gruvbox-dark.css)
-│   │   ├── settings.json
-│   │   └── mcp-servers.json
+│   │   └── settings.json
+│   ├── .mcp.json       # MCP server config (Claude Code expects this here)
 │   └── .bashrc            # Shell config for container
 ├── docker/                # Docker configuration
 │   ├── Dockerfile
@@ -46,7 +46,7 @@ Marvin/
 | Skills (OSINT, pentest) | `workspace/.claude/skills/`          | User's Claude reads these   |
 | PDF templates           | `workspace/.claude/templates/`       | Gruvbox dark theme          |
 | Container tools         | `docker/Dockerfile`                  | What gets installed         |
-| MCP servers             | `workspace/.claude/mcp-servers.json` | For container Claude        |
+| MCP servers             | `workspace/.mcp.json`             | For container Claude        |
 | User instructions       | `workspace/CLAUDE.md`                | Container Claude reads this |
 
 ### Engagement Structure
@@ -86,7 +86,7 @@ Skills are in `workspace/.claude/skills/`. Each skill has:
 ## When Editing Container Setup
 
 - **Add tools**: Edit `docker/Dockerfile`
-- **Add MCP servers**: Edit `workspace/.claude/mcp-servers.json`
+- **Add MCP servers**: Edit `workspace/.mcp.json`
 - **Change shell**: Edit `workspace/.bashrc`
 - **Add env vars**: Document in `docs/CONFIGURATION.md`
 
@@ -121,9 +121,9 @@ The `.gitignore` is configured to:
 - BUT keep
   - `workspace/CLAUDE.md`
   - `workspace/.bashrc`
+  - `workspace/.mcp.json`
   - `workspace/.claude/skills/**`
   - `workspace/.claude/templates/**`
   - `workspace/.claude/settings.json`
-  - `workspace/.claude/mcp-servers.json`
 
 This ensures skills and templates are tracked while user engagements are not.
