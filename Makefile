@@ -103,7 +103,7 @@ setup: ## First-time setup: generate .env, build, start, authenticate
 	@echo -e "$(GREEN)║         Setup Complete!              ║$(NC)"
 	@echo -e "$(GREEN)╚══════════════════════════════════════╝$(NC)"
 	@echo ""
-	@echo -e "  Run: $(BLUE)make claude$(NC) to start using Marvin"
+	@echo -e "  Run: $(BLUE)make marvin$(NC) to start using Marvin"
 	@echo ""
 
 .PHONY: build
@@ -132,11 +132,11 @@ build-clean: ## Build Docker image without cache (fresh build)
 up: ## Start containers in background
 	@$(COMPOSE) up -d
 	@echo -e "$(GREEN)✓$(NC) Marvin running"
-	@echo -e "  Launch Claude: $(BLUE)make claude$(NC)"
+	@echo -e "  Launch Claude: $(BLUE)make marvin$(NC)"
 	@echo -e "  Open shell:    $(BLUE)make shell$(NC)"
 
-.PHONY: claude
-claude: ## Launch Claude Code directly
+.PHONY: marvin
+marvin: ## Launch Claude Code (pass any args: make marvin ARGS="-c")
 	@if ! docker info >/dev/null 2>&1; then \
 		echo -e "$(RED)ERROR: Docker not running$(NC)"; \
 		exit 1; \
@@ -146,7 +146,7 @@ claude: ## Launch Claude Code directly
 		echo -e "$(YELLOW)Start with:$(NC) make up"; \
 		exit 1; \
 	fi
-	$(COMPOSE) exec marvin-vm claude
+	$(COMPOSE) exec marvin-vm claude $(ARGS)
 
 .PHONY: shell
 shell: ## Open bash shell in Marvin
@@ -175,7 +175,7 @@ logs: ## Follow container logs
 
 .PHONY: restart
 restart: ## Restart containers
-	@$(COMPOSE) restart
+	make down && make up
 	@echo -e "$(GREEN)✓$(NC) Restarted"
 
 # =============================================================================
@@ -197,6 +197,24 @@ login: ## Re-authenticate Claude Code (if needed)
 .PHONY: status
 status: ## Show container status
 	@$(COMPOSE) ps
+
+.PHONY: install
+install: ## Install 'marvin' command globally (~/.local/bin)
+	@mkdir -p ~/.local/bin
+	@chmod +x "$(CURDIR)/scripts/marvin"
+	@ln -sf "$(CURDIR)/scripts/marvin" ~/.local/bin/marvin
+	@echo -e "$(GREEN)✓$(NC) Installed 'marvin' to ~/.local/bin/"
+	@if echo "$$PATH" | grep -q "$$HOME/.local/bin"; then \
+		echo -e "  You can now run $(BLUE)marvin$(NC) from anywhere"; \
+	else \
+		echo -e "  $(YELLOW)Add ~/.local/bin to your PATH:$(NC)"; \
+		echo -e "    echo 'export PATH=\"\$$HOME/.local/bin:\$$PATH\"' >> ~/.bashrc"; \
+	fi
+
+.PHONY: uninstall
+uninstall: ## Remove 'marvin' command from ~/.local/bin
+	@rm -f ~/.local/bin/marvin
+	@echo -e "$(GREEN)✓$(NC) Removed 'marvin' from ~/.local/bin/"
 
 # =============================================================================
 # VPS Deployment
@@ -304,7 +322,6 @@ purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
 		echo -e "$(YELLOW)Removing user data (preserving config)...$(NC)"; \
 		rm -rf workspace/pentest 2>/dev/null || true; \
 		rm -f workspace/data.db 2>/dev/null || true; \
-		rm -f workspace/.claude-user-prefs 2>/dev/null || true; \
 		rm -f workspace/.claude-session-log 2>/dev/null || true; \
 		echo -e "$(YELLOW)Removing Claude auth (preserving MCP config)...$(NC)"; \
 		rm -f workspace/.claude/auth.json 2>/dev/null || true; \
@@ -353,9 +370,9 @@ doctor: ## Check system health and diagnose issues
 	@if $(COMPOSE) exec -T marvin-vm test -f /root/.config/claude/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make claude to login)$(NC)"; fi
 	@# Check MCP config
 	@echo -n "MCP config: "
-	@if [ -f workspace/.claude/mcp-servers.json ]; then \
-		servers=$$(jq '.mcpServers | length' workspace/.claude/mcp-servers.json 2>/dev/null || echo 0); \
-		enabled=$$(jq '[.mcpServers | to_entries[] | select(.value.disabled != true)] | length' workspace/.claude/mcp-servers.json 2>/dev/null || echo 0); \
+	@if [ -f workspace/.mcp.json ]; then \
+		servers=$$(jq '.mcpServers | length' workspace/.mcp.json 2>/dev/null || echo 0); \
+		enabled=$$(jq '[.mcpServers | to_entries[] | select(.value.disabled != true)] | length' workspace/.mcp.json 2>/dev/null || echo 0); \
 		echo -e "$(GREEN)✓ $$enabled/$$servers servers enabled$(NC)"; \
 	else \
 		echo -e "$(YELLOW)⚠ Missing$(NC)"; \

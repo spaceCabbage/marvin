@@ -9,6 +9,7 @@ ARG PYTHON_VERSION=3.12
 ARG GO_VERSION=1.25.6
 ARG BUN_VERSION=latest
 ARG INSTALL_METASPLOIT=false
+ARG ENABLE_CHROME=true
 
 # =============================================================================
 # Stage 1: Base System
@@ -176,7 +177,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
         yara-python && \
     sqlmap --version
 
-# Install OSINT tools (maigret replaces sherlock - more sites, better maintained)
+# Install OSINT tools
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system --break-system-packages \
         theHarvester \
@@ -191,8 +192,18 @@ RUN --mount=type=cache,target=/root/.cache/uv \
         bbot \
         maigret \
         metagoofil \
-        h8mail && \
+        h8mail \
+        holehe \
+        socialscan && \
     theHarvester --version || echo "theHarvester installed"
+
+# Install lead qualification / company research tools
+RUN --mount=type=cache,target=/root/.cache/uv \
+    git clone https://github.com/m8sec/CrossLinked.git /opt/crosslinked && \
+    cd /opt/crosslinked && \
+    uv pip install --system --break-system-packages -r requirements.txt && \
+    ln -s /opt/crosslinked/crosslinked.py /usr/local/bin/crosslinked && \
+    chmod +x /opt/crosslinked/crosslinked.py
 
 # Install recon-ng framework
 # Note: recon-ng has limited maintenance (creator stopped active development)
@@ -351,24 +362,39 @@ RUN apt-get update && \
 # =============================================================================
 FROM wifi-drivers AS claude-code
 
+ARG ENABLE_CHROME
+
 # Install Claude Code CLI (no sudo!)
 RUN npm install -g @anthropic-ai/claude-code && \
     claude --version
 
-# Pre-install MCP SDK and verified servers
-# Note: server-fetch, server-docker, server-git, server-time, server-sqlite don't exist on npm
+# Pre-install MCP SDK and verified servers (zod is a peer dependency of the SDK)
 RUN npm install -g \
+    zod \
     @modelcontextprotocol/sdk \
-    @modelcontextprotocol/server-filesystem \
     @modelcontextprotocol/server-memory \
-    @modelcontextprotocol/server-github \
     @modelcontextprotocol/server-sequential-thinking \
-    @playwright/mcp \
-    @upstash/context7-mcp
+    mcp-server-sqlite-npx \
+    @upstash/context7-mcp \
+    @playwright/mcp@0.0.56 \
+    @hubspot/mcp-server
 
-# Install Playwright browsers (headless Chromium) - to shared location
+# Set NODE_PATH so globally installed packages (like zod) are found by require()
+# This is critical for MCP servers that have zod as a peer dependency
+ENV NODE_PATH=/usr/local/lib/node_modules
+
+# Install Playwright browsers (headless Chromium) - conditional on ENABLE_CHROME
+# Browsers go to /opt/playwright, cache metadata copied to /opt/playwright-cache
+# At runtime, XDG_CACHE_HOME points here so Playwright can find its browsers
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
-RUN npx playwright install --with-deps chromium
+RUN if [ "${ENABLE_CHROME}" = "true" ]; then \
+      npx playwright@1.58.0-alpha-2026-01-16 install --with-deps chromium && \
+      mkdir -p /opt/playwright-cache/ms-playwright && \
+      cp -r /root/.cache/ms-playwright/* /opt/playwright-cache/ms-playwright/ 2>/dev/null || true && \
+      echo "Playwright Chrome installed (cache preserved to /opt/playwright-cache)"; \
+    else \
+      echo "Skipping Playwright browser installation (ENABLE_CHROME=false)"; \
+    fi
 
 # Create workspace directory (will be $HOME at runtime)
 RUN mkdir -p /workspace

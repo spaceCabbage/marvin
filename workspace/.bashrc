@@ -42,6 +42,9 @@ alias mv='mv -i'
 export PATH="$HOME/go/bin:/opt/go/bin:/usr/local/bin:$PATH"
 export GOPATH="$HOME/go"
 
+# Node.js - make global packages (like zod) available to require()
+export NODE_PATH="/usr/local/lib/node_modules"
+
 # Python
 export PYTHONDONTWRITEBYTECODE=1
 export PYTHONUNBUFFERED=1

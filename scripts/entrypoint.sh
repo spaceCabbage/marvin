@@ -11,38 +11,6 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}"
-echo '   ███████╗ █████╗ ██████╗ ██╗     '
-echo '   ██╔════╝██╔══██╗██╔══██╗██║     '
-echo '   ███████╗███████║██████╔╝██║     '
-echo '   ╚════██║██╔══██║██╔═══╝ ██║     '
-echo '   ███████║██║  ██║██║     ███████╗'
-echo '   ╚══════╝╚═╝  ╚═╝╚═╝     ╚══════╝'
-echo -e "${NC}"
-echo -e "${YELLOW}   Sophisticated Autonomous Pentesting Laboratory${NC}"
-echo -e "${GREEN}   \"When in doubt, build a bigger laser.\" - Tyler Vernon${NC}"
-echo ""
-
-# Initialize user preferences file (Claude can read/write this)
-USER_PREFS_FILE="$HOME/.claude-user-prefs"
-if [ ! -f "$USER_PREFS_FILE" ]; then
-    cat > "$USER_PREFS_FILE" << 'EOF'
-# Marvin User Preferences
-# Claude can read and write to this file to remember your preferences.
-# Add any personal info you want Claude to remember across sessions.
-
-# Example:
-# name: Your Name
-# email: your@email.com
-# github: yourusername
-# preferred_editor: vim
-# timezone: America/Chicago
-
-EOF
-    echo -e "${GREEN}✓${NC} Created user preferences file: $USER_PREFS_FILE"
-else
-    echo -e "${GREEN}✓${NC} User preferences loaded from: $USER_PREFS_FILE"
-fi
 
 # Check for Claude Code authentication
 AUTH_METHOD=${CLAUDE_AUTH_METHOD:-oauth}

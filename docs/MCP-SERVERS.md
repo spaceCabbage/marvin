@@ -5,186 +5,134 @@ Complete guide to Model Context Protocol (MCP) servers in Marvin.
 ## What are MCP Servers?
 
 MCP (Model Context Protocol) servers provide Claude Code with access to external tools and services. They enable Claude to:
-- Read and write files
-- Execute git commands  
-- Control Docker containers
+- Persist memory across sessions
+- Break down complex problems
 - Query databases
-- Browse the web
+- Browse the web with a real browser
+- Look up library documentation
 - And much more
 
 ## Pre-installed MCP Servers
 
 Marvin includes these MCP servers pre-configured:
 
-### Filesystem (`filesystem`)
+### Memory (`memory`)
 
-**Status**: ✅ Enabled by default  
-**Purpose**: Secure file operations within home directory (`~`)
+**Status**: ✅ Enabled by default
+**Package**: `@modelcontextprotocol/server-memory`
+**Purpose**: Persistent knowledge graph for remembering information across sessions
+
+**CRITICAL**: This is Marvin's primary storage for user preferences, installed tools, and session history.
 
 **Capabilities**:
-- Read files and directories
-- Write new files
-- Edit existing files  
-- Delete files (with confirmation)
-- Search files by pattern
+- Create entities (users, tools, configs)
+- Add observations to entities
+- Search knowledge graph
+- Persist across container restarts
 
 **Configuration**:
 ```json
 {
   "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-filesystem", "/workspace"]
+  "args": ["-y", "@modelcontextprotocol/server-memory"]
 }
 ```
 
 **Usage Example**:
 ```
-User: "Create a new Python script that prints hello world"
-Claude: [Uses filesystem MCP to write hello.py]
+# Create user profile
+memory.create_entities([{name: "user_profile", entityType: "user", observations: ["name: John"]}])
+
+# Add observations
+memory.add_observations([{entityName: "user_profile", contents: ["prefers: dark theme"]}])
+
+# Search
+memory.search_nodes("user preferences")
 ```
 
-### Git (`git`)
+### Sequential Thinking (`sequential-thinking`)
 
-**Status**: ✅ Enabled by default  
-**Purpose**: Git repository management
+**Status**: ✅ Enabled by default
+**Package**: `@modelcontextprotocol/server-sequential-thinking`
+**Purpose**: Break down complex problems into structured reasoning steps
 
 **Capabilities**:
-- Check status
-- View diffs
-- Create commits
-- Manage branches
-- View history
-- Push/pull (with confirmation)
+- Problem decomposition
+- Step-by-step reasoning
+- Thought branching and revision
+- Complex task planning
 
 **Configuration**:
 ```json
 {
   "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "/workspace"]
+  "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
 }
 ```
 
 **Usage Example**:
 ```
-User: "Show me what files have changed"
-Claude: [Uses git MCP to run git status and git diff]
+User: "Plan a penetration test for example.com"
+Claude: [Uses sequential-thinking to break down into phases: recon, scanning, enumeration, exploitation, reporting]
 ```
 
-### Docker (`docker`)
+### SQLite (`sqlite`)
 
-**Status**: ✅ Enabled by default  
-**Purpose**: Docker container and image management
+**Status**: ✅ Enabled by default
+**Package**: `@berthojoris/mcp-sqlite-server`
+**Purpose**: Local SQLite database for structured data storage
 
 **Capabilities**:
-- List containers
-- Start/stop containers
-- View logs
-- Inspect containers
-- Manage images
+- Create/modify tables
+- Run SQL queries
+- Store and retrieve data
+- Database at `~/data.db`
 
 **Configuration**:
 ```json
 {
   "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-docker"],
-  "env": {
-    "DOCKER_HOST": "unix:///var/run/docker.sock"
-  }
+  "args": ["-y", "@berthojoris/mcp-sqlite-server", "/workspace/data.db"]
 }
 ```
 
 **Usage Example**:
 ```
-User: "What Docker containers are running?"
-Claude: [Uses docker MCP to list running containers]
+User: "Store this lead information in the database"
+Claude: [Uses sqlite MCP to INSERT into companies table]
 ```
 
-### GitHub (`github`)
+### Context7 (`context7`)
 
-**Status**: ⚠️ Disabled by default  
-**Enable**: Set `GITHUB_TOKEN` in `.env`
-
-**Purpose**: GitHub integration for PRs, issues, and repositories
+**Status**: ✅ Enabled by default
+**Package**: `@upstash/context7-mcp`
+**Purpose**: Query documentation for programming libraries
 
 **Capabilities**:
-- Create/manage issues
-- Review pull requests
-- Manage repositories
-- View commit history
-- Search code
+- Search library documentation
+- Find code examples
+- Get API references
+- Best practices
 
 **Configuration**:
 ```json
 {
   "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-github"],
-  "env": {
-    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
-  }
+  "args": ["-y", "@upstash/context7-mcp"]
 }
-```
-
-**Enable Steps**:
-```bash
-# 1. Generate token at: https://github.com/settings/tokens
-#    Required scopes: repo, read:org
-
-# 2. Add to .env
-GITHUB_TOKEN=ghp_your_token_here
-
-# 3. Restart
-make restart
 ```
 
 **Usage Example**:
 ```
-User: "Create an issue on my-repo about the login bug"
-Claude: [Uses GitHub MCP to create issue]
-```
-
-### Brave Search (`brave-search`)
-
-**Status**: ⚠️ Disabled by default  
-**Enable**: Set `BRAVE_API_KEY` in `.env`
-
-**Purpose**: Web search for research and reconnaissance
-
-**Capabilities**:
-- Web search
-- News search
-- Image search (results only)
-
-**Configuration**:
-```json
-{
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-brave-search"],
-  "env": {
-    "BRAVE_API_KEY": "${BRAVE_API_KEY}"
-  }
-}
-```
-
-**Enable Steps**:
-```bash
-# 1. Get API key: https://brave.com/search/api/
-
-# 2. Add to .env
-BRAVE_API_KEY=your_api_key
-
-# 3. Restart
-make restart
-```
-
-**Usage Example**:
-```
-User: "Search for recent CVEs affecting nginx"
-Claude: [Uses Brave Search MCP to find recent security advisories]
+User: "How do I use React hooks?"
+Claude: [Uses Context7 to query React documentation]
 ```
 
 ### Playwright (`playwright`)
 
 **Status**: ✅ Enabled by default
-**Purpose**: Browser automation for web testing
+**Package**: `@playwright/mcp`
+**Purpose**: Browser automation for web scraping and testing
 
 **Capabilities**:
 - Navigate to URLs
@@ -199,46 +147,64 @@ Claude: [Uses Brave Search MCP to find recent security advisories]
 ```json
 {
   "command": "npx",
-  "args": ["-y", "@playwright/mcp"]
+  "args": ["-y", "@playwright/mcp@latest"]
 }
 ```
 
 **Usage Example**:
 ```
-User: "Take a screenshot of example.com"
-Claude: [Uses Playwright MCP to navigate and capture screenshot]
+User: "Scrape the company website for contact info"
+Claude: [Uses Playwright MCP to navigate and extract data]
 ```
 
-### Context7 (`context7`)
+### HubSpot (`hubspot`)
 
-**Status**: ✅ Enabled by default  
-**Purpose**: Query documentation for programming libraries
+**Status**: ⚠️ Disabled by default
+**Package**: `@hubspot/mcp-server`
+**Enable**: Set `HUBSPOT_ACCESS_TOKEN` in `.env`
+
+**Purpose**: CRM integration for pushing qualified leads
 
 **Capabilities**:
-- Search library documentation
-- Find code examples
-- Get API references
-- Best practices
+- Create companies
+- Create contacts
+- Add notes
+- Associate records
 
 **Configuration**:
 ```json
 {
   "command": "npx",
-  "args": ["-y", "@context7/mcp-server"]
+  "args": ["-y", "@hubspot/mcp-server"],
+  "env": {
+    "HUBSPOT_ACCESS_TOKEN": "${HUBSPOT_ACCESS_TOKEN}"
+  }
 }
 ```
 
-**Usage Example**:
-```
-User: "How do I use React hooks?"
-Claude: [Uses Context7 to query React documentation]
-```
+**Enable Steps**:
+1. Go to https://developers.hubspot.com/docs/api/private-apps
+2. Create a private app with CRM scopes
+3. Add to `.env`: `HUBSPOT_ACCESS_TOKEN=pat-na1-xxxxx`
+4. Run `make restart`
+
+## Built-in Claude Code Tools (No MCP Needed)
+
+These capabilities are built into Claude Code - no MCP server required:
+
+| Capability     | Tool           | Notes                  |
+|----------------|----------------|------------------------|
+| Read files     | `Read`         | Built-in file reader   |
+| Write files    | `Write`        | Built-in file writer   |
+| Edit files     | `Edit`         | Built-in editor        |
+| Web fetch      | `WebFetch`     | Fetch web content      |
+| Web search     | `WebSearch`    | Search the web         |
+| Run commands   | `Bash`         | Execute shell commands |
+| Git operations | `git` via Bash | Use git CLI directly   |
 
 ## Adding Custom MCP Servers
 
-### Method 1: Edit Configuration File
-
-Edit `workspace/.claude/mcp-servers.json`:
+Edit `workspace/.mcp.json`:
 
 ```json
 {
@@ -265,62 +231,6 @@ Restart Marvin:
 make restart
 ```
 
-### Method 2: Use Claude CLI (if available)
-
-```bash
-make shell
-claude mcp add my-server --command "npx -y @username/my-server"
-```
-
-## Popular Community MCP Servers
-
-### Atlassian (Jira/Confluence)
-
-```bash
-# In workspace/.claude/mcp-servers.json
-{
-  "atlassian": {
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-atlassian"],
-    "env": {
-      "ATLASSIAN_URL": "https://your-domain.atlassian.net",
-      "ATLASSIAN_EMAIL": "your-email@example.com",
-      "ATLASSIAN_API_TOKEN": "${ATLASSIAN_TOKEN}"
-    }
-  }
-}
-```
-
-### Supabase
-
-```bash
-{
-  "supabase": {
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-supabase"],
-    "env": {
-      "SUPABASE_URL": "${SUPABASE_URL}",
-      "SUPABASE_KEY": "${SUPABASE_KEY}"
-    }
-  }
-}
-```
-
-### Slack
-
-```bash
-{
-  "slack": {
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-slack"],
-    "env": {
-      "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
-      "SLACK_TEAM_ID": "${SLACK_TEAM_ID}"
-    }
-  }
-}
-```
-
 ## MCP Server Troubleshooting
 
 ### Check MCP Status
@@ -333,35 +243,25 @@ make claude
 "What MCP servers are available?"
 ```
 
-### Verify MCP Configuration
-
-```bash
-# Check JSON syntax
-cat workspace/.claude/mcp-servers.json | jq
-
-# Validate
-make shell
-jq empty workspace/.claude/mcp-servers.json && echo "Valid" || echo "Invalid"
-```
-
 ### Test Individual Server
 
 ```bash
-# Test filesystem MCP
 make shell
-npx -y @modelcontextprotocol/server-filesystem /workspace
 
-# Should start without errors
-```
+# Test memory MCP
+npx -y @modelcontextprotocol/server-memory
 
-### View MCP Logs
+# Test sequential-thinking MCP
+npx -y @modelcontextprotocol/server-sequential-thinking
 
-```bash
-# View Claude Code logs (includes MCP activity)
-make logs
+# Test sqlite MCP
+npx -y @berthojoris/mcp-sqlite-server /workspace/data.db
 
-# Look for MCP-related messages
-docker compose logs marvin-vm | grep -i mcp
+# Test context7 MCP
+npx -y @upstash/context7-mcp
+
+# Test playwright MCP
+npx -y @playwright/mcp
 ```
 
 ### Common Issues
@@ -370,9 +270,6 @@ docker compose logs marvin-vm | grep -i mcp
 ```bash
 # Ensure npx is available
 docker compose exec marvin-vm npx --version
-
-# Ensure Node.js is installed
-docker compose exec marvin-vm node --version
 
 # Reinstall if needed
 make build
@@ -387,49 +284,33 @@ cat .env | grep YOUR_VAR
 make restart
 ```
 
-**"Permission denied"**
-```bash
-# Check Docker socket permissions
-ls -la /var/run/docker.sock
-
-# May need to be in docker group
-groups
-```
-
 ## MCP Best Practices
+
+### When to Use MCPs vs Built-ins
+
+| Task                | Use                      | Why                                   |
+|---------------------|--------------------------|---------------------------------------|
+| Persist information | Memory MCP               | Survives restarts, structured storage |
+| Complex planning    | Sequential-thinking MCP  | Better reasoning structure            |
+| Database storage    | SQLite MCP               | Structured queries, relationships     |
+| Library docs        | Context7 MCP             | Up-to-date docs, code examples        |
+| Web scraping        | Playwright MCP           | Real browser, JavaScript execution    |
+| Simple file ops     | Built-in Read/Write/Edit | Faster, simpler                       |
+| Web content         | Built-in WebFetch        | Sufficient for most cases             |
+| Git commands        | Built-in Bash            | git CLI works fine                    |
 
 ### Security
 
 1. **API Keys**: Never commit API keys to git
 2. **Scopes**: Use minimal required permissions for tokens
-3. **Rotation**: Rotate API keys regularly
-4. **Environment**: Keep sensitive data in `.env` (gitignored)
-
-### Performance
-
-1. **Disable Unused**: Disable MCP servers you don't need
-2. **Timeout**: Adjust `mcp.timeout` in settings.json if needed
-3. **Caching**: Some MCP servers cache results locally
-
-### Organization
-
-1. **Group by Purpose**: Organize servers logically in config
-2. **Comment**: Add `"comment"` field to document usage
-3. **Naming**: Use clear, descriptive names for custom servers
-
-## MCP Server Development
-
-Want to create your own MCP server? See:
-- [MCP Documentation](https://modelcontextprotocol.io/)
-- [MCP Specification](https://spec.modelcontextprotocol.io/)
-- [Example MCP Servers](https://github.com/modelcontextprotocol/servers)
+3. **Environment**: Keep sensitive data in `.env` (gitignored)
 
 ## Resources
 
 - [Official MCP Servers](https://github.com/modelcontextprotocol/servers)
+- [MCP Registry](https://registry.modelcontextprotocol.io/)
 - [Awesome MCP Servers](https://github.com/wong2/awesome-mcp-servers)
 - [MCP Server Directory](https://mcpservers.org/)
-- [Claude Code MCP Guide](https://code.claude.com/docs/en/mcp)
 
 ---
 
