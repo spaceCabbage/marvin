@@ -43,6 +43,21 @@
       },
       "disabled": true,
       "comment": "HubSpot CRM - Enable by setting HUBSPOT_ACCESS_TOKEN in .env"
+    },
+    "telegram": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with", "mcp>=1.0.0",
+        "--with", "httpx>=0.27",
+        "python",
+        "/workspace/.claude/telegram-mcp/server.py"
+      ],
+      "env": {
+        "TELEGRAM_API_URL": "http://marvin-telegram:8443"
+      },
+      "disabled": true,
+      "comment": "Enable after running make bot-up. Gives Claude telegram_ask, telegram_send_message, telegram_send_file tools."
     }
   }
 }
