@@ -26,6 +26,10 @@ ifneq (,$(wildcard .env))
     export
 endif
 
+# Default values if not defined in .env
+TTYD_PORT ?= 4488
+FILEBROWSER_PORT ?= 5599
+
 # Default platform from .env or detected
 PLATFORM ?= $(DETECTED_PLATFORM)
 
@@ -103,7 +107,8 @@ setup: ## First-time setup: generate .env, build, start, authenticate
 	@echo -e "$(GREEN)║         Setup Complete!              ║$(NC)"
 	@echo -e "$(GREEN)╚══════════════════════════════════════╝$(NC)"
 	@echo ""
-	@echo -e "  Run: $(BLUE)make marvin$(NC) to start using Marvin"
+	@echo -e "  Web Terminal: $(BLUE)http://localhost:$(TTYD_PORT)$(NC)"
+	@echo -e "  File Browser: $(BLUE)http://localhost:$(FILEBROWSER_PORT)$(NC)"
 	@echo ""
 
 .PHONY: build
@@ -132,11 +137,12 @@ build-clean: ## Build Docker image without cache (fresh build)
 up: ## Start containers in background
 	@$(COMPOSE) up -d
 	@echo -e "$(GREEN)✓$(NC) Marvin running"
-	@echo -e "  Launch Claude: $(BLUE)make marvin$(NC)"
+	@echo -e "  Web Terminal: $(BLUE)http://localhost:$(TTYD_PORT)$(NC)"
+	@echo -e "  File Browser: $(BLUE)http://localhost:$(FILEBROWSER_PORT)$(NC)"
 	@echo -e "  Open shell:    $(BLUE)make shell$(NC)"
 
 .PHONY: marvin
-marvin: ## Launch Claude Code (pass any args: make marvin ARGS="-c")
+marvin: ## Attach to the single persistent Gemini session (tmux)
 	@if ! docker info >/dev/null 2>&1; then \
 		echo -e "$(RED)ERROR: Docker not running$(NC)"; \
 		exit 1; \
@@ -146,7 +152,9 @@ marvin: ## Launch Claude Code (pass any args: make marvin ARGS="-c")
 		echo -e "$(YELLOW)Start with:$(NC) make up"; \
 		exit 1; \
 	fi
-	$(COMPOSE) exec marvin-vm claude $(ARGS)
+	@# Ensure tmux session exists, create if missing (failsafe)
+	@$(COMPOSE) exec marvin-vm bash -c "tmux has-session -t marvin 2>/dev/null || tmux new-session -d -s marvin"
+	$(COMPOSE) exec marvin-vm tmux attach -t marvin
 
 .PHONY: shell
 shell: ## Open bash shell in Marvin
@@ -186,11 +194,11 @@ restart: ## Restart containers
 attach: connect ## Alias for connect
 
 .PHONY: login
-login: ## Re-authenticate Claude Code (if needed)
-	@echo -e "$(BLUE)Authenticating Claude Code...$(NC)"
+login: ## Re-authenticate Gemini CLI (if needed)
+	@echo -e "$(BLUE)Authenticating Gemini CLI...$(NC)"
 	@echo -e "$(YELLOW)This will open a browser for OAuth login$(NC)"
 	@echo ""
-	$(COMPOSE) exec marvin-vm claude login
+	$(COMPOSE) exec marvin-vm gemini login
 	@echo ""
 	@echo -e "$(GREEN)✓$(NC) Authentication complete!"
 
@@ -224,7 +232,7 @@ uninstall: ## Remove 'marvin' command from ~/.local/bin
 vps-simple-up: ## Start on VPS without domain (SSH tunnel access)
 	@echo -e "$(BLUE)Starting Marvin for VPS (no domain)...$(NC)"
 	@echo -e "$(YELLOW)Access via SSH tunnel:$(NC)"
-	@echo -e "  ssh -L 8080:localhost:8080 user@your-vps"
+	@echo -e "  ssh -L $(TTYD_PORT):localhost:$(TTYD_PORT) user@your-vps"
 	@echo ""
 	VPS_SIMPLE=1 $(COMPOSE) up -d
 	@echo -e "$(GREEN)✓$(NC) Marvin running (VPS simple mode)"
@@ -234,50 +242,6 @@ vps-up: ## Start on VPS with domain (Caddy/HTTPS)
 	@echo -e "$(BLUE)Starting Marvin for VPS (with Caddy)...$(NC)"
 	VPS=1 $(COMPOSE) up -d
 	@echo -e "$(GREEN)✓$(NC) Marvin running (VPS mode)"
-
-# =============================================================================
-# Telegram Bot
-# =============================================================================
-
-# Compose command that includes the telegram bot overlay
-COMPOSE_BOT := docker compose -f docker/docker-compose.yml -f docker/docker-compose.telegram.yml
-
-.PHONY: bot-build
-bot-build: ## Build the Telegram bot image
-	@echo -e "$(BLUE)Building Telegram bot...$(NC)"
-	docker build -t marvin-telegram:latest telegram-bot/
-	@echo -e "$(GREEN)✓$(NC) Bot image built"
-
-.PHONY: bot-up
-bot-up: ## Start the Telegram bot (requires TELEGRAM_BOT_TOKEN in .env)
-	@if [ -z "$(TELEGRAM_BOT_TOKEN)" ]; then \
-		echo -e "$(RED)ERROR: TELEGRAM_BOT_TOKEN not set in .env$(NC)"; \
-		echo -e "$(YELLOW)Get a token from @BotFather on Telegram, then add to .env$(NC)"; \
-		exit 1; \
-	fi
-	@if ! $(COMPOSE) ps 2>/dev/null | grep -q "marvin-vm.*Up"; then \
-		echo -e "$(YELLOW)Marvin container not running. Starting it first...$(NC)"; \
-		$(COMPOSE) up -d; \
-	fi
-	@echo -e "$(BLUE)Starting Telegram bot...$(NC)"
-	$(COMPOSE_BOT) up -d marvin-telegram
-	@echo -e "$(GREEN)✓$(NC) Telegram bot running"
-	@echo -e "  Logs: $(BLUE)make bot-logs$(NC)"
-
-.PHONY: bot-down
-bot-down: ## Stop the Telegram bot
-	@$(COMPOSE_BOT) stop marvin-telegram
-	@$(COMPOSE_BOT) rm -f marvin-telegram
-	@echo -e "$(GREEN)✓$(NC) Telegram bot stopped"
-
-.PHONY: bot-logs
-bot-logs: ## Follow Telegram bot logs
-	@$(COMPOSE_BOT) logs -f marvin-telegram
-
-.PHONY: bot-restart
-bot-restart: ## Restart the Telegram bot
-	@$(COMPOSE_BOT) restart marvin-telegram
-	@echo -e "$(GREEN)✓$(NC) Bot restarted"
 
 # =============================================================================
 # Cleanup
@@ -291,8 +255,7 @@ clean: ## Remove containers and volumes
 .PHONY: clean-all
 clean-all: clean ## Remove everything including images
 	@docker rmi marvin:latest 2>/dev/null || true
-	@docker rmi marvin-telegram:latest 2>/dev/null || true
-	@echo -e "$(GREEN)✓$(NC) Removed Marvin images"
+	@echo -e "$(GREEN)✓$(NC) Removed Marvin image"
 
 .PHONY: purge
 purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
@@ -302,11 +265,11 @@ purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
 	@echo ""
 	@echo -e "$(YELLOW)This will permanently delete:$(NC)"
 	@echo -e "  • User data (engagements/, data.db, preferences)"
-	@echo -e "  • Claude auth (requires re-login)"
+	@echo -e "  • Gemini auth (requires re-login)"
 	@echo -e "  • Docker images and build cache"
 	@echo -e "  • Your .env configuration"
 	@echo -e ""
-	@echo -e "$(GREEN)Preserved:$(NC) workspace/CLAUDE.md, workspace/.claude/ config"
+	@echo -e "$(GREEN)Preserved:$(NC) workspace/GEMINI.md, workspace/.gemini/ config"
 	@echo ""
 	@echo -e "$(RED)This cannot be undone!$(NC)"
 	@echo ""
@@ -322,12 +285,10 @@ purge: ## Reset to fresh clone state (DESTRUCTIVE - removes all data)
 		echo -e "$(YELLOW)Removing user data (preserving config)...$(NC)"; \
 		rm -rf workspace/pentest 2>/dev/null || true; \
 		rm -f workspace/data.db 2>/dev/null || true; \
-		rm -f workspace/.claude-session-log 2>/dev/null || true; \
-		echo -e "$(YELLOW)Removing Claude auth (preserving MCP config)...$(NC)"; \
-		rm -f workspace/.claude/auth.json 2>/dev/null || true; \
-		rm -f workspace/.claude/.claude-session 2>/dev/null || true; \
-		rm -f workspace/.claude/statsig.json 2>/dev/null || true; \
-		rm -rf workspace/.claude/projects 2>/dev/null || true; \
+		rm -f workspace/.gemini-session-log 2>/dev/null || true; \
+		echo -e "$(YELLOW)Removing Gemini auth (preserving MCP config)...$(NC)"; \
+		rm -f workspace/.gemini/auth.json 2>/dev/null || true; \
+		rm -rf workspace/.gemini/projects 2>/dev/null || true; \
 		echo -e "$(YELLOW)Removing .env...$(NC)"; \
 		rm -f .env 2>/dev/null || true; \
 		echo ""; \
@@ -366,25 +327,15 @@ doctor: ## Check system health and diagnose issues
 	@echo -n "Container: "
 	@if $(COMPOSE) ps 2>/dev/null | grep -q "marvin-vm.*Up"; then echo -e "$(GREEN)✓ Running$(NC)"; else echo -e "$(YELLOW)⚠ Not running (run make up)$(NC)"; fi
 	@# Check auth (if container running)
-	@echo -n "Claude auth: "
-	@if $(COMPOSE) exec -T marvin-vm test -f /root/.config/claude/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make claude to login)$(NC)"; fi
-	@# Check MCP config
-	@echo -n "MCP config: "
-	@if [ -f workspace/.mcp.json ]; then \
-		servers=$$(jq '.mcpServers | length' workspace/.mcp.json 2>/dev/null || echo 0); \
-		enabled=$$(jq '[.mcpServers | to_entries[] | select(.value.disabled != true)] | length' workspace/.mcp.json 2>/dev/null || echo 0); \
-		echo -e "$(GREEN)✓ $$enabled/$$servers servers enabled$(NC)"; \
+	@echo -n "Gemini auth: "
+	@if $(COMPOSE) exec -T marvin-vm test -f /root/.config/gemini/auth.json 2>/dev/null; then echo -e "$(GREEN)✓ Authenticated$(NC)"; else echo -e "$(YELLOW)⚠ Not authenticated (run make login)$(NC)"; fi
+	@# Check settings config
+	@echo -n "Gemini settings: "
+	@if [ -f workspace/.gemini/settings.json ]; then \
+		servers=$$(jq '.mcpServers | length' workspace/.gemini/settings.json 2>/dev/null || echo 0); \
+		echo -e "$(GREEN)✓ $$servers MCP servers configured$(NC)"; \
 	else \
 		echo -e "$(YELLOW)⚠ Missing$(NC)"; \
-	fi
-	@# Check Telegram bot
-	@echo -n "Telegram bot: "
-	@if docker ps --format "{{.Names}}" 2>/dev/null | grep -q "marvin-telegram"; then \
-		echo -e "$(GREEN)✓ Running$(NC)"; \
-	elif [ -n "$(TELEGRAM_BOT_TOKEN)" ]; then \
-		echo -e "$(YELLOW)⚠ Not running (run make bot-up)$(NC)"; \
-	else \
-		echo -e "$(YELLOW)- Not configured (set TELEGRAM_BOT_TOKEN in .env)$(NC)"; \
 	fi
 	@echo ""
 	@echo -e "$(BLUE)Diagnostics complete$(NC)"

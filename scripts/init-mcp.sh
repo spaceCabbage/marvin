@@ -1,6 +1,6 @@
 #!/bin/bash
 # MCP Server Initialization Script
-# Validates and initializes MCP server connections
+# Validates and initializes MCP server connections for Gemini CLI
 
 set -e
 
@@ -12,45 +12,51 @@ NC='\033[0m'
 
 echo "Initializing MCP servers..."
 
-# MCP config locations (use $HOME which is /workspace at runtime)
-# Claude Code expects ~/.mcp.json for MCP server definitions
-MCP_CONFIG="$HOME/.mcp.json"
-MCP_DEFAULT="$HOME/.mcp.json.default"
+# Gemini CLI expects settings.json in ~/.gemini/ (which is /workspace/.gemini at runtime)
+GEMINI_CONFIG_DIR="$HOME/.gemini"
+GEMINI_SETTINGS="$GEMINI_CONFIG_DIR/settings.json"
 
-# Check for MCP config
-if [ -f "$MCP_CONFIG" ]; then
-    echo -e "${GREEN}✓${NC} Found MCP configuration at $MCP_CONFIG"
-elif [ -f "$MCP_DEFAULT" ]; then
-    cp "$MCP_DEFAULT" "$MCP_CONFIG"
-    echo -e "${GREEN}✓${NC} Copied default MCP configuration"
+# Ensure config directory exists
+mkdir -p "$GEMINI_CONFIG_DIR"
+
+# Check for settings.json
+if [ -f "$GEMINI_SETTINGS" ]; then
+    echo -e "${GREEN}✓${NC} Found Gemini configuration at $GEMINI_SETTINGS"
 else
-    echo -e "${YELLOW}⚠${NC} No MCP configuration found"
-    echo "  Will be created on first 'claude' run"
-    echo "  Or add config to: $MCP_CONFIG"
-    # Don't exit - MCP is optional, Claude will work without it
-    exit 0
+    echo -e "${YELLOW}⚠${NC} No Gemini configuration found at $GEMINI_SETTINGS"
+    echo "  Creating initial settings.json..."
+    
+    # Create basic settings.json if missing (this should normally be mounted from host)
+    cat <<EOF > "$GEMINI_SETTINGS"
+{
+  "mcpServers": {},
+  "model": "gemini-3.0-flash",
+  "ui": {
+    "loadingPhrases": "witty"
+  }
+}
+EOF
 fi
 
-# Validate MCP configuration
+# Validate configuration
 if ! command -v jq &> /dev/null; then
     echo -e "${YELLOW}⚠${NC} jq not installed, skipping JSON validation"
 else
-    if jq empty "$MCP_CONFIG" 2>/dev/null; then
-        echo -e "${GREEN}✓${NC} MCP configuration is valid JSON"
+    if jq empty "$GEMINI_SETTINGS" 2>/dev/null; then
+        echo -e "${GREEN}✓${NC} Configuration is valid JSON"
 
         # Count configured servers
-        TOTAL=$(jq '.mcpServers | length' "$MCP_CONFIG")
-        ENABLED=$(jq '[.mcpServers | to_entries[] | select(.value.disabled != true)] | length' "$MCP_CONFIG")
-        DISABLED=$((TOTAL - ENABLED))
+        TOTAL=$(jq '.mcpServers | length' "$GEMINI_SETTINGS")
+        echo -e "${GREEN}✓${NC} $TOTAL MCP servers configured"
 
-        echo -e "${GREEN}✓${NC} $ENABLED MCP servers enabled ($DISABLED disabled)"
-
-        # List enabled servers
-        echo ""
-        echo "Enabled MCP servers:"
-        jq -r '.mcpServers | to_entries[] | select(.value.disabled != true) | "  - \(.key): \(.value.comment // "no description")"' "$MCP_CONFIG"
+        # List servers
+        if [ "$TOTAL" -gt 0 ]; then
+            echo ""
+            echo "Configured MCP servers:"
+            jq -r '.mcpServers | to_entries[] | "  - \(.key)"' "$GEMINI_SETTINGS"
+        fi
     else
-        echo -e "${RED}✗${NC} Invalid MCP configuration JSON"
+        echo -e "${RED}✗${NC} Invalid configuration JSON in $GEMINI_SETTINGS"
         exit 1
     fi
 fi

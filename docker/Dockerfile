@@ -14,7 +14,7 @@ ARG ENABLE_CHROME=true
 # =============================================================================
 # Stage 1: Base System
 # =============================================================================
-FROM --platform=$BUILDPLATFORM debian:${DEBIAN_VERSION} AS base
+FROM debian:${DEBIAN_VERSION} AS base
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -291,6 +291,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         file \
         strace \
         ltrace && \
+    curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash && \
+    ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then GOTTY_ARCH="amd64"; \
+    elif [ "$ARCH" = "aarch64" ]; then GOTTY_ARCH="arm64"; \
+    else GOTTY_ARCH="amd64"; fi && \
+    curl -fsSL "https://github.com/sorenisanerd/gotty/releases/download/v1.6.0/gotty_v1.6.0_linux_${GOTTY_ARCH}.tar.gz" | \
+    tar -xzf - -C /usr/local/bin ./gotty && \
+    chmod +x /usr/local/bin/gotty && \
     ln -s /usr/bin/fdfind /usr/local/bin/fd
 
 # Install bat (better cat)
@@ -358,22 +366,20 @@ RUN apt-get update && \
     fi
 
 # =============================================================================
-# Stage 7: Claude Code & MCP Servers
+# Stage 7: Gemini CLI & MCP Servers
 # =============================================================================
-FROM wifi-drivers AS claude-code
+FROM wifi-drivers AS gemini-cli
 
 ARG ENABLE_CHROME
 
-# Install Claude Code CLI (no sudo!)
-RUN npm install -g @anthropic-ai/claude-code && \
-    claude --version
+# Install Gemini CLI (no sudo!)
+RUN npm install -g @google/gemini-cli && \
+    gemini --version
 
 # Pre-install MCP SDK and verified servers (zod is a peer dependency of the SDK)
 RUN npm install -g \
     zod \
     @modelcontextprotocol/sdk \
-    @modelcontextprotocol/server-memory \
-    @modelcontextprotocol/server-sequential-thinking \
     mcp-server-sqlite-npx \
     @upstash/context7-mcp \
     @playwright/mcp@0.0.56 \
@@ -402,7 +408,7 @@ RUN mkdir -p /workspace
 # =============================================================================
 # Final Stage: Production Image
 # =============================================================================
-FROM claude-code AS final
+FROM gemini-cli AS final
 
 ARG INSTALL_METASPLOIT
 
@@ -430,7 +436,7 @@ COPY scripts/monitor-mode.sh /usr/local/bin/monitor-mode.sh
 # Make scripts executable
 RUN chmod +x /usr/local/bin/*.sh
 
-# Claude config comes from mounted workspace/.claude/
+# Gemini config comes from mounted workspace/.gemini/
 # No COPY needed - workspace is mounted and $HOME=/workspace
 
 # Set working directory to workspace (will be $HOME at runtime)
@@ -438,10 +444,10 @@ WORKDIR /workspace
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD claude --version || exit 1
+    CMD gemini --version || exit 1
 
-# Expose ports (for MCP servers if needed)
-EXPOSE 3000 5432 8080
+# Expose ports (for GoTTY and MCP servers)
+EXPOSE 7681 3000 5432 8080
 
 # Default to bash, but entrypoint can override
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
@@ -449,6 +455,7 @@ CMD ["/bin/bash"]
 
 # Labels for multi-arch
 LABEL org.opencontainers.image.title="Marvin"
-LABEL org.opencontainers.image.description="Multi-platform Claude Code security research and development environment"
+LABEL org.opencontainers.image.description="Multi-platform Gemini CLI security research and development environment"
 LABEL org.opencontainers.image.authors="Marvin Project"
 LABEL org.opencontainers.image.source="https://github.com/spaceCabbage/Marvin"
+

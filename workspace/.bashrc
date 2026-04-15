@@ -62,3 +62,9 @@ export LESS='-R --mouse --wheel-lines=3'
 
 # Load local customizations if present
 [ -f "$HOME/.bashrc.local" ] && source "$HOME/.bashrc.local"
+
+# Auto-launch Gemini in interactive sessions
+if [[ $- == *i* ]] && [ -z "$GEMINI_RUNNING" ]; then
+    export GEMINI_RUNNING=1
+    gemini
+fi

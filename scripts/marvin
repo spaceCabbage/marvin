@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-# Marvin - Launch Claude Code in the Marvin container
+# Marvin - Launch Gemini CLI in the Marvin container
 # Run from anywhere, auto-starts stack if needed
 
 # Resolve the actual script location (follows symlinks)
 SCRIPT_PATH="$(readlink -f "$0")"
-MARVIN_DIR="$(dirname "$SCRIPT_PATH")/.."
+MARVIN_DIR="$(dirname "$(dirname "$SCRIPT_PATH")")"
 
 cd "$MARVIN_DIR" || { echo "Error: Marvin directory not found"; exit 1; }
 
@@ -15,5 +15,5 @@ if ! make status 2>/dev/null | grep -q "marvin-vm.*Up"; then
     make up
 fi
 
-# Launch Claude with any passed arguments
+# Launch Gemini with any passed arguments
 exec make marvin ARGS="$*"

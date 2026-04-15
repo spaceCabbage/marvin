@@ -2,8 +2,9 @@
 # Use this for cloud VPS deployments without domain names
 #
 # Access via SSH port forwarding:
-#   ssh -L 8080:localhost:8080 user@your-vps
-#   Then access: http://localhost:8080
+#   ssh -L 4488:localhost:4488 -L 5599:localhost:5599 user@your-vps
+#   Terminal: http://localhost:4488
+#   Files:    http://localhost:5599
 
 services:
   marvin-vm:
@@ -22,16 +23,16 @@ services:
       - NET_RAW
       - SYS_PTRACE
 
-    # Expose ports directly for IP-based or SSH tunnel access
+    # Mapping custom host ports to standard container ports
     ports:
-      - '127.0.0.1:8080:8080' # Only listen on localhost for security
+      - "${TTYD_PORT:-4488}:7681"
+      - "${FILEBROWSER_PORT:-5599}:8080"
 
   # Override Chrome to not use profiles (always enabled on VPS)
   marvin-chrome:
     profiles: []
     ports:
       - '127.0.0.1:9222:9222' # Chrome debug port via SSH tunnel
-
 
 # No Caddy - direct access via SSH tunnel or internal network
 # Use with: docker compose -f docker/docker-compose.yml -f docker/docker-compose.vps-simple.yml up

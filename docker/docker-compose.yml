@@ -21,8 +21,9 @@ services:
     # Environment variables from .env
     environment:
       - HOME=/workspace
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-5-20250929}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3-flash-preview}
+      - GEMINI_AUTH_METHOD=${GEMINI_AUTH_METHOD:-oauth}
       - WIFI_INTERFACE=${WIFI_INTERFACE:-wlan1}
       - WIFI_MONITOR_MODE=${WIFI_MONITOR_MODE:-false}
       - TZ=${TZ:-UTC}
@@ -37,11 +38,8 @@ services:
       # Dotfiles, configs, projects, caches all persist here
       - ../workspace:/workspace:rw
 
-      # Docker socket for Docker MCP server
+      # Docker socket for Docker tools
       - /var/run/docker.sock:/var/run/docker.sock:rw
-
-      # Scripts (override if needed during development)
-      - ../scripts:/usr/local/bin/scripts:ro
 
     # Resource limits
     deploy:
@@ -55,11 +53,17 @@ services:
 
     # Health check
     healthcheck:
-      test: ['CMD', 'claude', '--version']
+      test: ['CMD', 'gemini', '--version']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
+    # Ports for web terminal and services
+    # Host Port : Container Port
+    ports:
+      - "${TTYD_PORT:-4488}:7681"
+      - "${FILEBROWSER_PORT:-5599}:8080"
 
     # Networks
     networks:

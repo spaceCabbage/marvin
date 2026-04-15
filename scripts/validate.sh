@@ -50,8 +50,7 @@ REQUIRED_FILES=(
     ".env.example"
     "scripts/entrypoint.sh"
     "scripts/init-mcp.sh"
-    "workspace/.claude/settings.json"
-    "workspace/.mcp.json"
+    "workspace/.gemini/settings.json"
 )
 
 for file in "${REQUIRED_FILES[@]}"; do
@@ -68,13 +67,13 @@ done
 echo -n "Checking .env configuration... "
 if [ -f .env ]; then
     # Check for either OAuth auth method or API key
-    if grep -q "CLAUDE_AUTH_METHOD=oauth" .env 2>/dev/null; then
+    if grep -q "GEMINI_AUTH_METHOD=oauth" .env 2>/dev/null; then
         echo "✓ Configured (OAuth mode)"
-    elif grep -q "sk-ant-" .env 2>/dev/null; then
+    elif grep -q "GEMINI_API_KEY=" .env 2>/dev/null && grep -v "GEMINI_API_KEY=$" .env &>/dev/null; then
         echo "✓ Configured (API key mode)"
     else
         echo "⚠️  No auth configured (run: make setup)"
-        echo "     Set CLAUDE_AUTH_METHOD=oauth or ANTHROPIC_API_KEY=sk-ant-..."
+        echo "     Set GEMINI_AUTH_METHOD=oauth or GEMINI_API_KEY=..."
     fi
 else
     echo "⚠️  Not found (run: make setup)"
@@ -89,7 +88,7 @@ if [ $ERRORS -eq 0 ]; then
     echo "  1. make setup      # Configure (if not done)"
     echo "  2. make build      # Build image"
     echo "  3. make up         # Start containers"
-    echo "  4. make claude     # Launch Claude Code"
+    echo "  4. make marvin     # Launch Gemini CLI"
 else
     echo "✗ Found $ERRORS error(s). Please fix before continuing."
 fi

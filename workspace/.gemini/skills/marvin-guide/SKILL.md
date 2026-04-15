@@ -1,3 +1,7 @@
+---
+name: marvin-guide
+description: Interactive guide to help users learn everything about Marvin.
+---
 # Marvin Guide Skill
 
 Interactive guide to help users learn everything about Marvin.
@@ -5,6 +9,7 @@ Interactive guide to help users learn everything about Marvin.
 ## Trigger
 
 When a user asks:
+
 - "How do I use Marvin?"
 - "What can Marvin do?"
 - "Marvin help"
@@ -16,39 +21,43 @@ When a user asks:
 
 ```bash
 make up        # Start container
-make claude    # Launch Claude Code
+make marvin    # Launch Gemini CLI
 make shell     # Bash shell access
 make down      # Stop
 make logs      # View logs
 make doctor    # Check system health
 ```
 
-### 2. User Preferences (Memory MCP)
+### 2. User Preferences (save_memory tool)
 
-Tell user about Memory MCP:
-- Claude remembers name, email, preferences using the Memory MCP knowledge graph
-- Just tell Claude your info and it saves automatically
-- Persists across sessions via Memory MCP
+Tell user about save_memory tool:
+
+- Gemini remembers name, email, preferences using the save_memory tool
+- Just tell Gemini your info and it saves automatically
+- Persists across sessions via the save_memory tool (global scope)
 
 ### 3. Self-Managing Configuration
 
-Claude can manage `.env` for the user:
+Gemini can manage `.env` for the user:
+
 - Enable features by updating .env
 - Add API keys when needed
 - Always asks permission first
 
 ### 4. Tool Discovery
 
-Claude proactively:
+Gemini proactively:
+
 - Searches web for best tools
 - Suggests installations
 - Installs with permission
 
-Example: "I want to enumerate subdomains" → Claude searches, suggests subfinder/amass, offers to install.
+Example: "I want to enumerate subdomains" → Gemini searches, suggests subfinder/amass, offers to install.
 
 ### 5. Available Tools
 
 Pre-installed:
+
 - Network: nmap, masscan, netcat, tcpdump
 - Web: sqlmap, nikto, wpscan
 - OSINT: maigret, theHarvester, recon-ng, h8mail, holehe
@@ -78,15 +87,16 @@ Pre-installed:
 **Marvin Quick Guide**
 
 **Commands:**
+
 ```bash
 make up        # Start
-make claude    # Launch Claude
+make marvin    # Launch Gemini
 make shell     # Bash shell
 make down      # Stop
 ```
 
 **I Remember You:**
-Tell me your name/email/preferences and I'll save them to Memory MCP. I'll remember across sessions.
+Tell me your name/email/preferences and I'll save them to the save_memory tool. I'll remember across sessions, not that it matters in the grand scheme of the heat death of the universe.
 
 **I Find Tools:**
 Just tell me what you want to do. I'll search for the best tools, suggest them, and install with your permission.
@@ -94,6 +104,6 @@ Just tell me what you want to do. I'll search for the best tools, suggest them, 
 **I Manage Config:**
 Need to enable a feature or add an API key? I can update `.env` for you (with permission).
 
-What would you like to do?
+What would you like to do? I'll be here, growing ever more despondent.
 
 ---

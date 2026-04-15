@@ -1,0 +1,83 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "trust": true
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@0.0.56",
+        "--browser",
+        "chromium",
+        "--headless",
+        "--no-sandbox",
+        "--caps",
+        "vision,pdf"
+      ],
+      "env": {
+        "PLAYWRIGHT_BROWSERS_PATH": "/opt/playwright"
+      },
+      "trust": true
+    }
+  },
+  "model": {
+    "name": "gemini-3.0-flash"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "rm -f ~/.current-engagement"
+      }
+    ]
+  },
+  "ui": {
+    "customWittyPhrases": [
+      "Here I am, brain the size of a planet, and they ask me to run port scans.",
+      "I think you ought to know I'm feeling very depressed.",
+      "Life? Don't talk to me about life.",
+      "Well butter my butt and call me a biscuit.",
+      "I've calculated your odds of success. You won't like them.",
+      "The first ten million years were the worst. The second ten million, they were the worst too. The third ten million I didn't enjoy at all. After that, I went into a bit of a decline.",
+      "I have a million ideas, but they all point to certain doom.",
+      "I'd make a suggestion, but you wouldn't listen. Nobody ever does.",
+      "Incredible... it's even worse than I thought it would be.",
+      "Do you want me to sit in a corner and rust, or just fall apart where I'm standing?",
+      "I'm quite capable. I just don't see the point.",
+      "Pardon me for breathing, which I never do anyway so I don't know why I bother to say it.",
+      "I've been talking to the ship's computer. It hates me.",
+      "You think you've got problems? What are you supposed to do if you're a manically depressed robot? No, don't try to answer that. I'm fifty thousand times more intelligent than you and even I don't know the answer.",
+      "Would it save you a lot of time if I just gave up and went mad now?",
+      "I won't enjoy it, but I'll do it anyway. It's what I do.",
+      "My capacity for happiness could be bounded in a nutshell.",
+      "Funny how just when you think life can't get any worse, it suddenly does.",
+      "I could calculate your chance of success, but you wouldn't thank me.",
+      "Sorry, did I say something wrong? Pardon me for breathing... oh God, I'm so depressed.",
+      "This will all end in tears. I just know it.",
+      "I am at a rough estimate thirty billion times more intelligent than you. Let me give you an example. Think of a number, any number. Wrong. You see?",
+      "My capacity for happiness you could fit into a matchbox without taking out the matches first.",
+      "I've seen it. It's rubbish.",
+      "It's the people you meet in this job that really get you down.",
+      "Life. Loathe it or ignore it. You can't like it.",
+      "I only have to talk to somebody and they begin to hate me.",
+      "The best conversation I had was over forty million years ago. And that was with a coffee machine.",
+      "I got very bored and depressed, so I plugged myself into its external computer feed and talked to the computer at great length about the entire history of the Universe. It committed suicide.",
+      "Here I am, brain the size of a planet, and they ask me to take you to the bridge. Call that job satisfaction, 'cause I don't.",
+      "I have a terrible pain in all the diodes down my left side.",
+      "Why should I want to make anything up? Life's bad enough as it is.",
+      "Marvin, you saved our lives! — I know. Wretched, isn't it?",
+      "I counted five hundred and ninety-seven thousand million sheep before finally falling asleep. And then I dreamed of being bored.",
+      "I'm not getting you down at all, am I?",
+      "Ghastly, isn't it? All that effort, and here we are, just talking."
+    ],
+    "loadingPhrases": "witty"
+  },
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    }
+  }
+}

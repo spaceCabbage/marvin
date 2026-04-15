@@ -1,0 +1,68 @@
+/* Gruvbox Dark Theme for File Browser */
+:root {
+  --primary: #fe8019;
+  --secondary: #ebdbb2;
+  --background: #282828;
+  --surface: #3c3836;
+  --on-surface: #ebdbb2;
+  --on-background: #ebdbb2;
+}
+
+body {
+  background-color: #282828 !important;
+  color: #ebdbb2 !important;
+}
+
+header {
+  background-color: #1d2021 !important;
+}
+
+.dashboard {
+  background-color: #282828 !important;
+}
+
+.item {
+  background-color: #3c3836 !important;
+  color: #ebdbb2 !important;
+}
+
+.item:hover {
+  background-color: #504945 !important;
+}
+
+.action {
+  color: #fe8019 !important;
+}
+
+#nav {
+  background-color: #1d2021 !important;
+}
+
+button {
+  background-color: #fe8019 !important;
+}
+
+/* Fix for the white background in some areas */
+.main,
+main,
+.container {
+  background-color: #282828 !important;
+}
+
+/* File icons and names */
+.item .name,
+.item .size {
+  color: #ebdbb2 !important;
+}
+
+/* Sidebar/Nav items */
+.nav-item,
+.sidebar-item {
+  color: #a89984 !important;
+}
+
+.nav-item.active,
+.sidebar-item.active {
+  color: #fe8019 !important;
+  background-color: #3c3836 !important;
+}

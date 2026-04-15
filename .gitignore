@@ -3,23 +3,23 @@
 
 # Ignore workspace contents (user data)
 workspace/*
-workspace/.claude/*
+workspace/.gemini/*
 
 # Keep essential config files
-!workspace/CLAUDE.md
+!workspace/GEMINI.md
 !workspace/.bashrc
-!workspace/.mcp.json
-# Keep .claude directory structure
-!workspace/.claude/
-# Keep specific .claude contents
-!workspace/.claude/skills/
-!workspace/.claude/skills/**
-!workspace/.claude/templates/
-!workspace/.claude/templates/**
-!workspace/.claude/settings.json
-!workspace/.claude/statusline.sh
-!workspace/.claude/telegram-mcp/
-!workspace/.claude/telegram-mcp/**
+# Keep .gemini directory structure
+!workspace/.gemini/
+# Keep specific .gemini contents
+!workspace/.gemini/skills/
+!workspace/.gemini/skills/**
+!workspace/.gemini/templates/
+!workspace/.gemini/templates/**
+!workspace/.gemini/settings.json
+
+# Keep engagements directory structure
+!workspace/engagements/
+!workspace/engagements/.gitkeep
 
 # Caddy data
 config/caddy/data/
